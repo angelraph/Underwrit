@@ -1,5 +1,5 @@
 [project]
-name = "healthfactormonitor-agent"
+name = "yieldrouter-agent"
 
 [stack]
 # Project-lifetime facts: which runtime adapter recipe this Agent was
@@ -38,8 +38,8 @@ kind = "evm-local"
 signer = "local"
 keystore_dir = "../../.studio/wallets"
 # address = "0x..."   # filled by `bag wallet new`
-address = "0xd2368DBE3ab9232111250C72358ffC1e60A75Fb2"
-platform_exposed_addresses = ["0xd2368DBE3ab9232111250C72358ffC1e60A75Fb2"]
+address = "0x2406b7d0Dbc0a501e39EbE9606Ae7a9bE258321e"
+platform_exposed_addresses = ["0x2406b7d0Dbc0a501e39EbE9606Ae7a9bE258321e"]
 
 [llm]
 provider = "pieverse-llm"
@@ -52,7 +52,7 @@ network = "bsc-mainnet"
 # zero-deposit default. `bag llm activate` creates the key with $0
 # allocation; switch to a paid model + `bag llm topup` only when you need it.
 initial_allocation_usd = 0
-key_hash = "5486459213b7598be955e417394efbcc152b943f7b7d1b485156c584e4c89b42"
+key_hash = "d142629658348aa10bb358caf19d2103aeec2a85326dda484fd5e75f2cc7c2e5"
 
 [llm.auto_renew]
 # hook auto-allocates from Pieverse Account Balance to the API key when Key
@@ -95,15 +95,15 @@ expected_recipient = ""
 allowed_hosts = ["llm.pieverse.io"]
 
 [deploy.platform]
-terms_accepted_at = "2026-08-13T14:46:37Z"
-slug = "healthfactormonitor"
-deployment_id = "01KZXWEHSCPSSZSKKH4HBG02AH"
+terms_accepted_at = "2026-08-13T21:43:50Z"
+slug = "yieldrouter"
+deployment_id = "01KZYHVWK1R6ARS5NYCQ9AD7YV"
 backend = "aws"
-agent_id = "01KZXSY3F5YYEBC0DWNE9CA9D7"
-invoke_url = "https://bnbagent-api.bnbchain.world/v1/rt/01KZXSY3F5YYEBC0DWNE9CA9D7/.well-known/agent-card.json"
-last_deploy_at = "2026-08-13T15:39:49Z"
+agent_id = "01KZYHVWK2K29W0XBHFJ0BTNQS"
+invoke_url = "https://bnbagent-api.bnbchain.world/v1/rt/01KZYHVWK2K29W0XBHFJ0BTNQS/.well-known/agent-card.json"
+last_deploy_at = "2026-08-13T21:54:23Z"
 
 [identity]
-endpoint = "https://bnbagent-api.bnbchain.world/v1/rt/01KZXSY3F5YYEBC0DWNE9CA9D7/.well-known/agent-card.json"
-registered_at = "2026-08-13T14:58:16.878Z"
-agent_id = 1814
+endpoint = "https://bnbagent-api.bnbchain.world/v1/rt/01KZYHVWK2K29W0XBHFJ0BTNQS/.well-known/agent-card.json"
+registered_at = "2026-08-13T21:55:30.117Z"
+agent_id = 1818

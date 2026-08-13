@@ -12,7 +12,8 @@
     "build": "npm run build --workspace=apps/web",
     "db:generate": "npm run generate --workspace=packages/db",
     "db:push": "npm run push --workspace=packages/db",
-    "sync:health-factor-guardian": "tsx packages/db/scripts/syncHealthFactorGuardian.ts"
+    "sync:health-factor-guardian": "tsx packages/db/scripts/syncHealthFactorGuardian.ts",
+    "sync:yield-router": "tsx packages/db/scripts/syncYieldRouter.ts"
   },
   "devDependencies": {
     "tsx": "^4.19.0"
