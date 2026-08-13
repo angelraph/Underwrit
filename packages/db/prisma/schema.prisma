@@ -1,0 +1,173 @@
+// Underwrit data model.
+// Every numeric evidence field here must trace back to a real on-chain tx hash
+// (Action.txHash) or a real 8004scan feedback record — never a fabricated value.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  REBALANCING
+  GRID
+  YIELD
+  HEALTH_FACTOR
+}
+
+enum Network {
+  TESTNET
+  MAINNET
+}
+
+enum AgentSource {
+  OURS
+  THIRD_PARTY
+}
+
+enum ActionResult {
+  SUCCESS
+  FAIL
+}
+
+enum SessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+model Agent {
+  id             String      @id @default(cuid())
+  erc8004AgentId String? // tokenId in the ERC-8004 IdentityRegistry, null until registered
+  chainId        Int
+  network        Network
+  category       Category
+  name           String
+  ownerAddress   String
+  walletAddress  String?
+  studioDeployed Boolean     @default(false)
+  source         AgentSource @default(OURS)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  actions          Action[]
+  evidenceSnapshots EvidenceSnapshot[]
+  jobFitResults    JobFitResult[]
+  sessions         Session[]
+  arenaRuns        ArenaRun[]
+
+  @@unique([chainId, erc8004AgentId])
+  @@index([category])
+  @@index([source])
+}
+
+model Action {
+  id         String       @id @default(cuid())
+  agentId    String
+  agent      Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  timestamp  DateTime     @default(now())
+  actionType String
+  txHash     String
+  paramsJson Json
+  gasCost    Float?
+  result     ActionResult
+  latencyMs  Int?
+
+  counterfactual Counterfactual?
+
+  @@index([agentId, timestamp])
+  @@index([txHash])
+}
+
+model EvidenceSnapshot {
+  id                 String   @id @default(cuid())
+  agentId            String
+  agent              Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  computedAt         DateTime @default(now())
+  confidenceScore    Float // 0-100
+  successRate        Float // 0-1
+  avgCost            Float
+  avgReactionTimeSec Float
+  netYieldPct        Float?
+  worstDrawdownPct   Float?
+  capitalTested      Float
+  daysObserved       Int
+  actionsExecuted    Int
+  actionsSucceeded   Int
+  actionsFailed      Int
+
+  @@index([agentId, computedAt])
+}
+
+model Counterfactual {
+  id               String @id @default(cuid())
+  actionId         String @unique
+  action           Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  baselineScenario String // e.g. "held 50/50", "did nothing"
+  baselineOutcome  Float
+  actualOutcome    Float
+  valueCreated     Float
+}
+
+model JobSpec {
+  id              String   @id @default(cuid())
+  userAddress     String
+  objectiveText   String
+  category        Category
+  constraintsJson Json // { maxCapital, maxDailySpend, maxDrawdownPct, allowedProtocols[], withdrawalsAllowed, expiryDays }
+  createdAt       DateTime @default(now())
+
+  jobFitResults JobFitResult[]
+  sessions      Session[]
+
+  @@index([userAddress])
+}
+
+model JobFitResult {
+  id                 String  @id @default(cuid())
+  jobSpecId          String
+  jobSpec            JobSpec @relation(fields: [jobSpecId], references: [id], onDelete: Cascade)
+  agentId            String
+  agent              Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  fitScore           Float // 0-100, see packages/evidence-engine
+  projectedMetricsJson Json
+  rank               Int
+
+  @@index([jobSpecId, rank])
+}
+
+model Session {
+  id               String        @id @default(cuid())
+  jobSpecId        String
+  jobSpec          JobSpec       @relation(fields: [jobSpecId], references: [id], onDelete: Cascade)
+  agentId          String
+  agent            Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  altanaSessionId  String? // keyId registered in the Altana Keystore
+  walletAddress    String
+  permissionsJson  Json // { calls: [...], spend: { limit, period, token } }
+  expiry           DateTime
+  status           SessionStatus @default(ACTIVE)
+  grantTxHash      String?
+  revokeTxHash     String?
+  createdAt        DateTime      @default(now())
+
+  @@index([jobSpecId])
+  @@index([agentId])
+  @@index([status])
+}
+
+model ArenaRun {
+  id         String   @id @default(cuid())
+  category   Category
+  scenarioId String
+  agentId    String
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  metricsJson Json
+  runAt      DateTime @default(now())
+
+  @@index([category, scenarioId])
+  @@index([agentId, runAt])
+}
