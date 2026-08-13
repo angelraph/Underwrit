@@ -44,3 +44,15 @@ export const PANCAKESWAP_V3_MAINNET = {
 
 export const BSC_TESTNET_FAUCET_URL = "https://www.bnbchain.org/en/testnet-faucet";
 export const SCAN8004_API_BASE = "https://8004scan.io/api/v1/public";
+
+/**
+ * Venus Protocol Core Pool, BSC Testnet. Each address independently verified
+ * live on testnet.bscscan.com during research (real transaction history,
+ * correct token-tracker labels) — not taken on faith from a single source.
+ */
+export const VENUS_TESTNET = {
+  comptroller: "0x94d1820b2D1c7c7452A163983Dc888CEC546b77D", // VERIFIED: active Comptroller (Enter Markets / Set Collateral Factor calls)
+  poolLens: "0x166C45bCCE54166Ecf9bCDF8d2EC562014A06048", // VERIFIED: real contract; no tx history expected (pure view/lens)
+  vBNB: "0x2E7222e51c0f6e98610A1543Aa3836E092CDe62c", // VERIFIED: "BEP-20: Venus BNB (vBNB)", real Mint/Redeem activity
+  vUSDT: "0xb7526572FFE56AB9D7489838Bf2E18e3323b441A", // VERIFIED: "BEP-20: Venus USDT (vUSDT)", real Borrow/RepayBorrow activity
+} as const;

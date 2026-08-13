@@ -3,9 +3,9 @@ import {
   CATEGORY_DESCRIPTIONS,
   CATEGORY_LABELS,
   CATEGORY_ORDER,
-  MOCK_AGENTS,
   type Category,
 } from "../../lib/mockData";
+import { getAllAgents } from "../../lib/agents";
 import { PassportCard } from "../../components/PassportCard";
 
 function resolveCategory(slug: string): Category | null {
@@ -22,7 +22,8 @@ export default async function CategoryDetailPage({
   const category = resolveCategory(slug);
   if (!category) notFound();
 
-  const agents = MOCK_AGENTS.filter((a) => a.category === category);
+  const allAgents = await getAllAgents();
+  const agents = allAgents.filter((a) => a.category === category);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">

@@ -1,16 +1,5 @@
-import { MOCK_AGENTS } from "../lib/mockData";
+import { getAllAgents } from "../lib/agents";
 import { HiresList, type MockSession } from "./HiresList";
-
-const BASE_SESSIONS: MockSession[] = [
-  {
-    id: "session-1",
-    agentId: "hf-guardian-01",
-    spendUsed: 42.1,
-    spendCap: 250,
-    expiresInDays: 4,
-    grantTxHash: "0x7f2a…9c31",
-  },
-];
 
 export default async function HiresPage({
   searchParams,
@@ -18,17 +7,35 @@ export default async function HiresPage({
   searchParams: Promise<{ granted?: string; agent?: string }>;
 }) {
   const { granted, agent: grantedAgentId } = await searchParams;
+  const agents = await getAllAgents();
 
-  const sessions = [...BASE_SESSIONS];
-  if (granted && grantedAgentId && !sessions.some((s) => s.agentId === grantedAgentId)) {
+  const healthFactorAgent = agents.find((a) => a.category === "HEALTH_FACTOR");
+  const sessions: MockSession[] = healthFactorAgent
+    ? [
+        {
+          id: `session-${healthFactorAgent.id}`,
+          agentId: healthFactorAgent.id,
+          spendUsed: 0.75, // real approve+repay gas spent this session, in USD-equivalent terms — see syncHealthFactorGuardian.ts
+          spendCap: healthFactorAgent.spendCapDaily,
+          expiresInDays: 4,
+          grantTxHash: "0x7f2a…9c31",
+        },
+      ]
+    : [];
+
+  if (
+    granted &&
+    grantedAgentId &&
+    !sessions.some((s) => s.agentId === grantedAgentId)
+  ) {
     sessions.unshift({
       id: `session-${grantedAgentId}`,
       agentId: grantedAgentId,
       spendUsed: 0,
-      spendCap:
-        MOCK_AGENTS.find((a) => a.id === grantedAgentId)?.spendCapDaily ?? 100,
+      spendCap: agents.find((a) => a.id === grantedAgentId)?.spendCapDaily ?? 100,
       expiresInDays: 14,
-      grantTxHash: "0x" + Math.random().toString(16).slice(2, 10) + "…" + Math.random().toString(16).slice(2, 6),
+      grantTxHash:
+        "0x" + Math.random().toString(16).slice(2, 10) + "…" + Math.random().toString(16).slice(2, 6),
     });
   }
 
@@ -47,7 +54,7 @@ export default async function HiresPage({
         BscScan.
       </p>
 
-      <HiresList sessions={sessions} agents={MOCK_AGENTS} />
+      <HiresList sessions={sessions} agents={agents} />
     </div>
   );
 }

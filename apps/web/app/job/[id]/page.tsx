@@ -4,16 +4,16 @@ import { rankAgentsForJob } from "@underwrit/evidence-engine";
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
-  MOCK_AGENTS,
   protocolsFromPermissions,
   type Category,
 } from "../../lib/mockData";
+import { getAllAgents } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
 // This job id is a placeholder until /job/new posts to a real API route that
 // persists a JobSpec via @underwrit/db (week 2). The Job Fit computation
-// below is already real — swap MOCK_AGENTS for a Prisma query and nothing
-// else here needs to change.
+// itself is already real, and now scores real agents (getAllAgents merges DB
+// agents with mock fallbacks for categories without a real agent yet).
 export default async function JobResultsPage({
   searchParams,
 }: {
@@ -32,7 +32,8 @@ export default async function JobResultsPage({
     expiryDays: 14,
   };
 
-  const candidates: AgentCandidate[] = MOCK_AGENTS.map((a) => ({
+  const agents = await getAllAgents();
+  const candidates: AgentCandidate[] = agents.map((a) => ({
     agentId: a.id,
     category: a.category,
     network: a.network,
@@ -71,7 +72,7 @@ export default async function JobResultsPage({
 
       <div className="mt-8 flex flex-col gap-3">
         {results.map((r, i) => {
-          const agent = MOCK_AGENTS.find((a) => a.id === r.agentId)!;
+          const agent = agents.find((a) => a.id === r.agentId)!;
           return (
             <div
               key={r.agentId}

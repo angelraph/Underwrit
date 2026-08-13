@@ -11,7 +11,11 @@
     "dev": "npm run dev --workspace=apps/web",
     "build": "npm run build --workspace=apps/web",
     "db:generate": "npm run generate --workspace=packages/db",
-    "db:push": "npm run push --workspace=packages/db"
+    "db:push": "npm run push --workspace=packages/db",
+    "sync:health-factor-guardian": "tsx packages/db/scripts/syncHealthFactorGuardian.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
   },
   "engines": {
     "node": ">=20"
@@ -20,6 +24,7 @@
     "@prisma/client@6.19.3": true,
     "@prisma/engines@6.19.3": true,
     "prisma@6.19.3": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "esbuild@0.28.2": true
   }
 }

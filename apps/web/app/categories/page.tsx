@@ -3,11 +3,17 @@ import {
   CATEGORY_DESCRIPTIONS,
   CATEGORY_LABELS,
   CATEGORY_ORDER,
-  MOCK_AGENTS,
 } from "../lib/mockData";
+import { getAllAgents } from "../lib/agents";
 import { PassportCard } from "../components/PassportCard";
 
-export default function CategoriesPage() {
+// Reads live from Postgres on every request — without this, Next statically
+// prerenders the page at build time and bakes in whatever the DB returned
+// then, which goes stale the moment a new Action/EvidenceSnapshot lands.
+export const dynamic = "force-dynamic";
+
+export default async function CategoriesPage() {
+  const agents = await getAllAgents();
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">
@@ -20,7 +26,7 @@ export default function CategoriesPage() {
 
       <div className="mt-10 flex flex-col gap-12">
         {CATEGORY_ORDER.map((category) => {
-          const agents = MOCK_AGENTS.filter((a) => a.category === category);
+          const categoryAgents = agents.filter((a) => a.category === category);
           return (
             <section key={category}>
               <div className="flex items-baseline justify-between">
@@ -40,7 +46,7 @@ export default function CategoriesPage() {
                 </Link>
               </div>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {agents.map((agent) => (
+                {categoryAgents.map((agent) => (
                   <PassportCard key={agent.id} agent={agent} />
                 ))}
               </div>

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_ORDER,
-  MOCK_AGENTS,
-} from "../lib/mockData";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "../lib/mockData";
+import { getAllAgents } from "../lib/agents";
+
+// Same reasoning as categories/page.tsx — read live, never bake in a
+// build-time snapshot of the leaderboard.
+export const dynamic = "force-dynamic";
 
 const SCENARIO_LABEL: Record<string, string> = {
   REBALANCING: "Simulated LP position, market moves ±8%",
@@ -19,7 +20,8 @@ const METRIC_LABEL: Record<string, string> = {
   HEALTH_FACTOR: "Reaction time to risk",
 };
 
-export default function ArenaPage() {
+export default async function ArenaPage() {
+  const allAgents = await getAllAgents();
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">Agent Arena</h1>
@@ -32,7 +34,7 @@ export default function ArenaPage() {
 
       <div className="mt-10 flex flex-col gap-10">
         {CATEGORY_ORDER.map((category) => {
-          const agents = MOCK_AGENTS.filter((a) => a.category === category).sort(
+          const agents = allAgents.filter((a) => a.category === category).sort(
             (a, b) => (b.netYieldPct ?? 0) - (a.netYieldPct ?? 0)
           );
           return (
@@ -65,7 +67,9 @@ export default function ArenaPage() {
                         <td className="px-4 py-3 mono-nums text-accent">
                           {agent.netYieldPct != null
                             ? `+${agent.netYieldPct.toFixed(1)}%`
-                            : `${agent.avgReactionTimeSec.toFixed(1)}s`}
+                            : agent.avgReactionTimeSec > 0
+                              ? `${agent.avgReactionTimeSec.toFixed(1)}s`
+                              : "— (not yet measured)"}
                         </td>
                         <td className="px-4 py-3 mono-nums">{agent.confidenceScore}</td>
                       </tr>

@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CATEGORY_LABELS, MOCK_AGENTS } from "../../lib/mockData";
+import { prisma } from "@underwrit/db";
+import { CATEGORY_LABELS } from "../../lib/mockData";
+import { getAgentById } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
 export default async function AgentPassportPage({
@@ -9,8 +11,28 @@ export default async function AgentPassportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const agent = MOCK_AGENTS.find((a) => a.id === id);
+  const agent = await getAgentById(id);
   if (!agent) notFound();
+
+  // Real counterfactual, if this is a DB-backed agent with one recorded
+  // (see packages/db/scripts/syncHealthFactorGuardian.ts). Mock agents (and
+  // real agents with no counterfactual yet) fall through to null and the
+  // section below shows an honest "not yet available" state instead of a
+  // fabricated number.
+  let counterfactual: {
+    baselineScenario: string;
+    baselineOutcome: number;
+    actualOutcome: number;
+    valueCreated: number;
+  } | null = null;
+  try {
+    counterfactual = await prisma.counterfactual.findFirst({
+      where: { action: { agentId: agent.id } },
+      orderBy: { id: "desc" },
+    });
+  } catch {
+    // DB unreachable — leave counterfactual null, page still renders.
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
@@ -56,28 +78,39 @@ export default async function AgentPassportPage({
         <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
           Counterfactual — what would&apos;ve happened without this agent
         </h2>
-        <p className="mt-3 text-sm text-muted">
-          Most recent significant action, compared against the category
-          baseline it&apos;s measured against.
-        </p>
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          <div>
-            <div className="text-muted text-xs">Actual result</div>
-            <div className="mono-nums text-lg">
-              +{(agent.netYieldPct ?? 3.6).toFixed(1)}%
+        {counterfactual ? (
+          <>
+            <p className="mt-3 text-sm text-muted">
+              Most recent protective action, compared against: &quot;
+              {counterfactual.baselineScenario}&quot;.
+            </p>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <div className="text-muted text-xs">Actual result</div>
+                <div className="mono-nums text-lg">
+                  {counterfactual.actualOutcome.toFixed(2)} USD liquidity
+                </div>
+              </div>
+              <div>
+                <div className="text-muted text-xs">Baseline (no action)</div>
+                <div className="mono-nums text-lg">
+                  {counterfactual.baselineOutcome.toFixed(2)} USD liquidity
+                </div>
+              </div>
+              <div>
+                <div className="text-muted text-xs">Value created</div>
+                <div className="mono-nums text-lg text-accent">
+                  +{counterfactual.valueCreated.toFixed(2)} USD liquidity
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <div className="text-muted text-xs">Baseline (no action)</div>
-            <div className="mono-nums text-lg">+1.2%</div>
-          </div>
-          <div>
-            <div className="text-muted text-xs">Value created</div>
-            <div className="mono-nums text-lg text-accent">
-              +{((agent.netYieldPct ?? 3.6) - 1.2).toFixed(1)}%
-            </div>
-          </div>
-        </div>
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            No counterfactual recorded yet — this agent hasn&apos;t taken a
+            protective action with a measured baseline comparison.
+          </p>
+        )}
       </section>
 
       <section className="mt-10">
