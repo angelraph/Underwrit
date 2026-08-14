@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Category } from "../../lib/mockData";
+import { useAltanaWallet } from "../../lib/useAltanaWallet";
 
 export function JobContractForm({
   categories,
@@ -16,18 +17,62 @@ export function JobContractForm({
   defaultObjective?: string;
 }) {
   const router = useRouter();
+  const { address, loading: walletLoading, creating, create } = useAltanaWallet();
   const [category, setCategory] = useState<string>(
     defaultCategory ?? categories[0]
   );
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO(week 2): POST to an API route that creates a JobSpec row via
-    // @underwrit/db, runs rankAgentsForJob from @underwrit/evidence-engine,
-    // and redirects to the real job id. Placeholder demo route for now so
-    // the full journey is clickable end-to-end.
-    router.push(`/job/demo?category=${category}`);
+    setError(null);
+
+    let userAddress = address;
+    if (!userAddress) {
+      try {
+        const wallet = await create();
+        userAddress = wallet.address;
+      } catch {
+        setError("Couldn't create a wallet — try again.");
+        return;
+      }
+    }
+
+    const form = new FormData(e.currentTarget);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userAddress,
+          objectiveText: String(form.get("objective") ?? ""),
+          category,
+          constraints: {
+            maxCapital: Number(form.get("maxCapital")),
+            maxDailySpend: Number(form.get("maxDailySpend")),
+            maxDrawdownPct: Number(form.get("maxDrawdownPct")),
+            allowedProtocols: [],
+            withdrawalsAllowed: form.get("withdrawalsAllowed") === "on",
+            expiryDays: Number(form.get("expiryDays")),
+          },
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `${res.status} ${res.statusText}`);
+      }
+      const { id } = (await res.json()) as { id: string };
+      router.push(`/job/${id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create job");
+    } finally {
+      setSubmitting(false);
+    }
   }
+
+  const busy = submitting || creating || walletLoading;
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6">
@@ -95,11 +140,14 @@ export function JobContractForm({
         Allow withdrawals
       </label>
 
+      {error && <p className="text-sm text-risk-high">{error}</p>}
+
       <button
         type="submit"
-        className="rounded-md bg-accent-dim text-background px-5 py-3 text-sm font-medium hover:bg-accent transition-colors"
+        disabled={busy}
+        className="rounded-md bg-accent-dim text-background px-5 py-3 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
       >
-        Find agents
+        {creating ? "Creating wallet…" : submitting ? "Finding agents…" : !address ? "Connect wallet & find agents" : "Find agents"}
       </button>
     </form>
   );

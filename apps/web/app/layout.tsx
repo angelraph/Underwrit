@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { WalletButton } from "./components/WalletButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   {link.label}
                 </Link>
               ))}
+              <WalletButton />
             </nav>
           </div>
         </header>

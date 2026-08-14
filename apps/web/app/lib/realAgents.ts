@@ -50,7 +50,8 @@ export async function getRealAgentsAsMockShape(): Promise<MockAgent[]> {
         worstDrawdownPct: snap.worstDrawdownPct,
         risk: deriveRisk(snap.confidenceScore),
         permissions: CATEGORY_PERMISSIONS[a.category] ?? [],
-        spendCapDaily: 250, // planned session cap — no live Altana session yet, see plan's open items
+        spendCapDaily: 250, // default proposed cap shown before a session is granted — the real enforced cap lives in the Session row once hired
+        walletAddress: a.walletAddress,
       } satisfies MockAgent;
     });
 }

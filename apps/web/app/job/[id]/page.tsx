@@ -1,36 +1,31 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { AgentCandidate, JobConstraints } from "@underwrit/evidence-engine";
 import { rankAgentsForJob } from "@underwrit/evidence-engine";
+import { prisma } from "@underwrit/db";
 import {
   CATEGORY_LABELS,
-  CATEGORY_ORDER,
   protocolsFromPermissions,
   type Category,
 } from "../../lib/mockData";
 import { getAllAgents } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
-// This job id is a placeholder until /job/new posts to a real API route that
-// persists a JobSpec via @underwrit/db (week 2). The Job Fit computation
-// itself is already real, and now scores real agents (getAllAgents merges DB
-// agents with mock fallbacks for categories without a real agent yet).
+// Real JobSpec, loaded fresh each view (never persisted JobFitResult rows —
+// evidence changes over time, so ranking is recomputed live against
+// whatever the agents' current EvidenceSnapshots say, exactly like every
+// other real-evidence screen in this app).
 export default async function JobResultsPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { category: rawCategory } = await searchParams;
-  const category: Category =
-    (CATEGORY_ORDER.find((c) => c === rawCategory) as Category) ?? "REBALANCING";
+  const { id } = await params;
+  const jobSpec = await prisma.jobSpec.findUnique({ where: { id } });
+  if (!jobSpec) notFound();
 
-  const constraints: JobConstraints = {
-    maxCapital: 5000,
-    maxDailySpend: 20,
-    maxDrawdownPct: 3,
-    allowedProtocols: [],
-    withdrawalsAllowed: false,
-    expiryDays: 14,
-  };
+  const category = jobSpec.category as Category;
+  const constraints = jobSpec.constraintsJson as unknown as JobConstraints;
 
   const agents = await getAllAgents();
   const candidates: AgentCandidate[] = agents.map((a) => ({
@@ -117,13 +112,13 @@ export default async function JobResultsPage({
 
               <div className="mt-4 flex gap-2">
                 <Link
-                  href={`/job/demo/trial?agent=${agent.id}`}
+                  href={`/job/${jobSpec.id}/trial?agent=${agent.id}`}
                   className="flex-1 text-center rounded-md border border-border px-3 py-2 text-sm hover:border-accent/50 transition-colors"
                 >
                   Run Trial
                 </Link>
                 <Link
-                  href={`/job/demo/hire?agent=${agent.id}`}
+                  href={`/job/${jobSpec.id}/hire?agent=${agent.id}`}
                   className="flex-1 text-center rounded-md bg-accent-dim text-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
                 >
                   Hire

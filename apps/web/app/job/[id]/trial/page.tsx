@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MOCK_AGENTS } from "../../../lib/mockData";
+import { getAgentById } from "../../../lib/agents";
 
 export default async function TrialPage({
   params,
@@ -11,7 +11,7 @@ export default async function TrialPage({
 }) {
   const { id } = await params;
   const { agent: agentId } = await searchParams;
-  const agent = MOCK_AGENTS.find((a) => a.id === agentId);
+  const agent = agentId ? await getAgentById(agentId) : undefined;
   if (!agent) notFound();
 
   return (

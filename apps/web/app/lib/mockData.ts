@@ -41,6 +41,8 @@ export interface MockAgent {
   permissions: string[];
   spendCapDaily: number;
   fitScore?: number;
+  /** Real on-chain wallet address for OURS agents; null for mock/third-party agents with no real hire target. */
+  walletAddress: string | null;
 }
 
 export const MOCK_AGENTS: MockAgent[] = [
@@ -63,6 +65,7 @@ export const MOCK_AGENTS: MockAgent[] = [
     risk: "Moderate",
     permissions: ["Venus: repay", "Venus: read position"],
     spendCapDaily: 250,
+    walletAddress: null,
   },
   {
     id: "lp-optimizer-1847",
@@ -83,6 +86,7 @@ export const MOCK_AGENTS: MockAgent[] = [
     risk: "Moderate",
     permissions: ["PancakeSwap: liquidity", "PancakeSwap: swap"],
     spendCapDaily: 500,
+    walletAddress: null,
   },
   {
     id: "grid-runner-04",
@@ -103,6 +107,7 @@ export const MOCK_AGENTS: MockAgent[] = [
     risk: "Moderate",
     permissions: ["PancakeSwap: swap"],
     spendCapDaily: 300,
+    walletAddress: null,
   },
   {
     id: "yield-router-02",
@@ -123,6 +128,7 @@ export const MOCK_AGENTS: MockAgent[] = [
     risk: "Low",
     permissions: ["Venus: lend", "Lista: stake", "PancakeSwap: liquidity"],
     spendCapDaily: 400,
+    walletAddress: null,
   },
 ];
 

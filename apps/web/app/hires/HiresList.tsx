@@ -2,35 +2,69 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import type { Address, Hex } from "viem";
+import { formatEther } from "viem";
 import type { MockAgent } from "../lib/mockData";
+import { getAltanaClient, BNB_TESTNET } from "../lib/altana";
+import { useAltanaWallet } from "../lib/useAltanaWallet";
 
-export interface MockSession {
+export interface RealSession {
   id: string;
   agentId: string;
-  spendUsed: number;
-  spendCap: number;
-  expiresInDays: number;
-  grantTxHash: string;
+  walletAddress: string;
+  altanaSessionId: string | null;
+  permissionsJson: { calls?: { to?: string }[]; spend?: { limit: string; period: string }[] };
+  expiry: string; // ISO
+  status: string;
+  grantTxHash: string | null;
+  revokeTxHash: string | null;
 }
 
-export function HiresList({
-  sessions,
-  agents,
-}: {
-  sessions: MockSession[];
-  agents: MockAgent[];
-}) {
-  const [revoked, setRevoked] = useState<Set<string>>(new Set());
+export function HiresList({ sessions, agents }: { sessions: RealSession[]; agents: MockAgent[] }) {
+  const { address, getSigner } = useAltanaWallet();
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  async function handleRevoke(sessionId: string) {
-    setRevoking(sessionId);
-    // TODO(week 3): call an API route that runs client.revokeSession(...)
-    // via @altananetwork/sdk, writes revokeTxHash + status=REVOKED on the
-    // Session row. Mocked here so the revoke UX is demoable now.
-    await new Promise((r) => setTimeout(r, 700));
-    setRevoked((prev) => new Set(prev).add(sessionId));
-    setRevoking(null);
+  async function handleRevoke(session: RealSession) {
+    if (!session.altanaSessionId) {
+      setErrors((e) => ({ ...e, [session.id]: "No session key on record — nothing to revoke on-chain." }));
+      return;
+    }
+    if (!address || session.walletAddress.toLowerCase() !== address.toLowerCase()) {
+      setErrors((e) => ({ ...e, [session.id]: "Connect the wallet that granted this session to revoke it." }));
+      return;
+    }
+    const signer = getSigner();
+    if (!signer) {
+      setErrors((e) => ({ ...e, [session.id]: "Wallet signer unavailable." }));
+      return;
+    }
+
+    setRevoking(session.id);
+    setErrors((e) => ({ ...e, [session.id]: "" }));
+    try {
+      const client = getAltanaClient();
+      const result = await client.revokeSession({
+        wallet: { address: address as Address },
+        signer,
+        session: session.altanaSessionId as Hex,
+        chainId: BNB_TESTNET.chainId,
+      });
+
+      const res = await fetch(`/api/sessions/${session.id}/revoke`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revokeTxHash: result.transactionHash }),
+      });
+      if (!res.ok) throw new Error("Revoked on-chain, but failed to update the record — refresh to check.");
+
+      setLocalStatus((s) => ({ ...s, [session.id]: "REVOKED" }));
+    } catch (e) {
+      setErrors((err) => ({ ...err, [session.id]: e instanceof Error ? e.message : "Revoke failed" }));
+    } finally {
+      setRevoking(null);
+    }
   }
 
   return (
@@ -38,19 +72,15 @@ export function HiresList({
       {sessions.map((session) => {
         const agent = agents.find((a) => a.id === session.agentId);
         if (!agent) return null;
-        const isRevoked = revoked.has(session.id);
-        const pctUsed = Math.min(100, (session.spendUsed / session.spendCap) * 100);
+        const status = localStatus[session.id] ?? session.status;
+        const isRevoked = status === "REVOKED";
+        const spend = session.permissionsJson.spend?.[0];
+        const target = session.permissionsJson.calls?.[0]?.to;
 
         return (
-          <div
-            key={session.id}
-            className="rounded-lg border border-border bg-surface p-5"
-          >
+          <div key={session.id} className="rounded-lg border border-border bg-surface p-5">
             <div className="flex items-center justify-between">
-              <Link
-                href={`/agents/${agent.id}`}
-                className="font-medium hover:text-accent transition-colors"
-              >
+              <Link href={`/agents/${agent.id}`} className="font-medium hover:text-accent transition-colors">
                 {agent.name}
               </Link>
               <span
@@ -60,33 +90,32 @@ export function HiresList({
                     : "border-risk-low/30 text-risk-low bg-risk-low/10"
                 }`}
               >
-                {isRevoked ? "Revoked" : "Active"}
+                {isRevoked ? "Revoked" : status === "EXPIRED" ? "Expired" : "Active"}
               </span>
             </div>
 
-            <div className="mt-3 text-sm">
-              <div className="flex justify-between text-xs text-muted mb-1">
-                <span>Spend used</span>
-                <span className="mono-nums">
-                  ${session.spendUsed.toFixed(2)} / ${session.spendCap}/day
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-surface-raised overflow-hidden">
-                <div
-                  className="h-full bg-accent-dim"
-                  style={{ width: `${pctUsed}%` }}
-                />
-              </div>
+            <div className="mt-3 text-sm text-muted">
+              {spend && (
+                <div>
+                  Spend cap: {formatEther(BigInt(spend.limit))} tBNB / {spend.period}
+                </div>
+              )}
+              {target && <div className="text-xs mt-1 break-all">Scoped to: {target}</div>}
             </div>
 
             <div className="mt-3 flex items-center justify-between text-xs text-muted">
-              <span>Expires in {session.expiresInDays} days</span>
-              <span className="mono-nums">grant tx {session.grantTxHash}</span>
+              <span>Expires {new Date(session.expiry).toLocaleString()}</span>
+              {session.grantTxHash && <span className="mono-nums">grant tx {session.grantTxHash.slice(0, 10)}…</span>}
             </div>
+            {isRevoked && session.revokeTxHash && (
+              <div className="mt-1 text-xs text-muted mono-nums">revoke tx {session.revokeTxHash.slice(0, 10)}…</div>
+            )}
+
+            {errors[session.id] && <p className="mt-2 text-xs text-risk-high">{errors[session.id]}</p>}
 
             {!isRevoked && (
               <button
-                onClick={() => handleRevoke(session.id)}
+                onClick={() => handleRevoke(session)}
                 disabled={revoking === session.id}
                 className="mt-4 w-full rounded-md border border-risk-high/40 text-risk-high px-3 py-2 text-sm hover:bg-risk-high/10 transition-colors disabled:opacity-60"
               >
@@ -96,9 +125,7 @@ export function HiresList({
           </div>
         );
       })}
-      {sessions.length === 0 && (
-        <p className="text-muted text-sm">No active hires yet.</p>
-      )}
+      {sessions.length === 0 && <p className="text-muted text-sm">No active hires yet.</p>}
     </div>
   );
 }
