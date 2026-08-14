@@ -24,6 +24,7 @@ const NAV_LINKS = [
   { href: "/categories", label: "Browse" },
   { href: "/arena", label: "Arena" },
   { href: "/opportunities", label: "Opportunities" },
+  { href: "/advantage-report", label: "Advantage Report" },
   { href: "/hires", label: "My Hires" },
 ];
 
