@@ -26,7 +26,7 @@ export default async function CategoryDetailPage({
   const agents = allAgents.filter((a) => a.category === category);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">
         {CATEGORY_LABELS[category]}
       </h1>

@@ -15,7 +15,7 @@ export default async function TrialPage({
   if (!agent) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">Trial</div>
       <h1 className="text-2xl font-semibold tracking-tight mt-1">
         {agent.name}
@@ -34,35 +34,35 @@ export default async function TrialPage({
           <div>
             <div className="text-muted text-xs">Projected outcome</div>
             <div className="mono-nums text-lg text-accent">
-              +{(agent.netYieldPct ?? 3.6).toFixed(1)}%
+              {agent.netYieldPct != null ? `+${agent.netYieldPct.toFixed(1)}%` : "n/a for this category"}
             </div>
           </div>
           <div>
             <div className="text-muted text-xs">Projected worst case</div>
             <div className="mono-nums text-lg">
-              -{(agent.worstDrawdownPct ?? 2.5).toFixed(1)}%
+              {agent.worstDrawdownPct != null ? `-${agent.worstDrawdownPct.toFixed(1)}%` : "not yet measured"}
             </div>
           </div>
           <div>
             <div className="text-muted text-xs">Est. actions over 14 days</div>
             <div className="mono-nums text-lg">
-              {Math.round((agent.actionsExecuted / agent.daysObserved) * 14)}
+              {agent.daysObserved > 0
+                ? Math.round((agent.actionsExecuted / agent.daysObserved) * 14)
+                : "not yet measured"}
             </div>
           </div>
           <div>
             <div className="text-muted text-xs">Est. total cost</div>
             <div className="mono-nums text-lg">
-              $
-              {(
-                agent.avgCost *
-                Math.round((agent.actionsExecuted / agent.daysObserved) * 14)
-              ).toFixed(2)}
+              {agent.daysObserved > 0
+                ? `$${(agent.avgCost * Math.round((agent.actionsExecuted / agent.daysObserved) * 14)).toFixed(2)}`
+                : "not yet measured"}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Link
           href={`/agents/${agent.id}`}
           className="rounded-md border border-border px-4 py-2.5 text-sm hover:border-accent/50 transition-colors"

@@ -100,7 +100,7 @@ export function JobContractForm({
         </select>
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Max capital ($)">
           <input
             type="number"

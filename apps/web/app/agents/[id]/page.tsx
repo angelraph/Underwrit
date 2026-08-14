@@ -35,7 +35,7 @@ export default async function AgentPassportPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">
         {CATEGORY_LABELS[agent.category]} ·{" "}
         {agent.network === "MAINNET" ? "Mainnet" : "Testnet"}
@@ -128,12 +128,12 @@ export default async function AgentPassportPage({
           </li>
         </ul>
         <div className="mt-2 text-sm text-muted">
-          ${agent.spendCapDaily}/day spend cap · session expires 7 days after
-          hire · enforced on-chain via Altana, revocable anytime
+          ${agent.spendCapDaily}/day proposed spend cap · expiry set by you
+          at hire time · enforced on-chain via Altana, revocable anytime
         </div>
       </section>
 
-      <div className="mt-10 flex gap-3">
+      <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href={`/job/new?category=${agent.category}&agent=${agent.id}`}
           className="rounded-md border border-border px-4 py-2.5 text-sm hover:border-accent/50 transition-colors"

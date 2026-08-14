@@ -9,7 +9,7 @@ export default async function NewJobPage({
   const params = await searchParams;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">Job Contract</h1>
       <p className="mt-2 text-muted">
         Describe the job and the constraints an agent must stay inside. This

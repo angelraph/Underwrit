@@ -23,7 +23,7 @@ const METRIC_LABEL: Record<string, string> = {
 export default async function ArenaPage() {
   const allAgents = await getAllAgents();
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12">
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">Agent Arena</h1>
       <p className="mt-2 text-muted max-w-2xl">
         Ranked by each agent&apos;s own real, independently-verified on-chain

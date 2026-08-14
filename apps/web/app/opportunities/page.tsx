@@ -12,7 +12,7 @@ export default async function OpportunitiesPage() {
   const uninitialized = tiers.filter((t) => !t.exists);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">
         Liquidity Opportunities
       </h1>
@@ -31,7 +31,7 @@ export default async function OpportunitiesPage() {
           {tiers.map((t) => (
             <div
               key={t.fee}
-              className={`flex items-center justify-between rounded-md border px-4 py-3 text-sm ${
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 rounded-md border px-4 py-3 text-sm ${
                 t.exists ? "border-risk-low/30 bg-risk-low/5" : "border-border"
               }`}
             >

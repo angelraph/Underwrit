@@ -14,7 +14,7 @@ export default async function HiresPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
       {granted && (
         <div className="mb-6 rounded-md border border-accent/40 bg-accent/10 px-4 py-3 text-sm text-accent">
           Session granted to {granted}. It can act only within the permissions

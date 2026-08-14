@@ -25,7 +25,7 @@ export default async function HirePage({
   const expiryDays = constraints.expiryDays ?? 14;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">Hire — Altana session</div>
       <h1 className="text-2xl font-semibold tracking-tight mt-1">
         {agent.name}

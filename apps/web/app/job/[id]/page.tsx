@@ -54,7 +54,7 @@ export default async function JobResultsPage({
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">{CATEGORY_LABELS[category]}</div>
       <h1 className="text-2xl font-semibold tracking-tight mt-1">
         Job Fit results
@@ -102,7 +102,7 @@ export default async function JobResultsPage({
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-5 gap-2 text-xs">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-2 text-xs">
                 <ScoreBar label="Capability" value={r.breakdown.capabilityMatch} />
                 <ScoreBar label="Evidence" value={r.breakdown.evidenceConfidence} />
                 <ScoreBar label="Reliability" value={r.breakdown.reliability} />

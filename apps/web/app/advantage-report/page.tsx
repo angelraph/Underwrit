@@ -7,7 +7,7 @@ export default async function AdvantageReportPage() {
   const tasks = await getAdvantageTasks();
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">Agent Advantage Report</div>
       <h1 className="text-2xl font-semibold tracking-tight mt-1">
         Does hiring an agent actually beat doing it yourself?
