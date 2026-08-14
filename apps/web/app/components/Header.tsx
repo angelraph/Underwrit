@@ -14,10 +14,11 @@ const NAV_LINKS = [
 ];
 
 /**
- * Five nav links plus the wallet button don't fit on one row below ~700px
- * — rather than let the header overflow horizontally (which drags the
- * whole page along with it), the nav collapses into a hamburger menu
- * under the `md` breakpoint. Desktop keeps the plain horizontal row.
+ * Six nav links (including "Advantage Report", the longest label) plus the
+ * wallet button need roughly 800px of clear width — more than `md`'s 768px
+ * floor gives them. Collapses into a hamburger menu below `lg` instead, so
+ * the switchover always has real room rather than overflowing right at the
+ * boundary.
  */
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,7 +33,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm">
+        <nav className="hidden lg:flex items-center gap-5 text-sm">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -45,7 +46,7 @@ export function Header() {
           <WalletButton />
         </nav>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <WalletButton />
           <button
             onClick={() => setMenuOpen((v) => !v)}
@@ -65,7 +66,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <nav className="md:hidden border-t border-border px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm bg-background">
+        <nav className="lg:hidden border-t border-border px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm bg-background">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
