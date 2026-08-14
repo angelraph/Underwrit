@@ -65,7 +65,10 @@ export default async function AgentPassportPage({
           <Stat label="Successful" value={String(agent.actionsSucceeded)} />
           <Stat label="Failed" value={String(agent.actionsFailed)} />
           <Stat label="Average execution cost" value={`$${agent.avgCost.toFixed(3)}`} />
-          <Stat label="Average reaction time" value={`${agent.avgReactionTimeSec.toFixed(1)}s`} />
+          <Stat
+            label="Average reaction time"
+            value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
+          />
           {agent.netYieldPct != null && (
             <Stat label="Net yield improvement" value={`+${agent.netYieldPct.toFixed(1)}%`} />
           )}

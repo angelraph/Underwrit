@@ -41,7 +41,10 @@ export function PassportCard({ agent, showHire = true }: { agent: MockAgent; sho
           value={`${agent.actionsSucceeded}/${agent.actionsExecuted} succeeded`}
         />
         <Stat label="Avg cost" value={`$${agent.avgCost.toFixed(3)}`} />
-        <Stat label="Avg reaction" value={`${agent.avgReactionTimeSec.toFixed(1)}s`} />
+        <Stat
+          label="Avg reaction"
+          value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
+        />
         {agent.netYieldPct != null && (
           <Stat label="Net yield" value={`+${agent.netYieldPct.toFixed(1)}%`} />
         )}
