@@ -22,14 +22,41 @@ export interface Scan8004Envelope<T> {
   error?: { code: string; message: string; details?: unknown };
 }
 
+/**
+ * Field names verified against a real live response from
+ * https://8004scan.io/api/v1/public/agents (not assumed/speculative — the
+ * original version of this interface used camelCase names like `chainId`/
+ * `ownerAddress` that don't exist on the real payload at all, which meant
+ * any code reading `agent.chainId` would silently get `undefined` despite
+ * TypeScript claiming it was a `number`. The API is snake_case throughout.
+ */
 export interface Scan8004Agent {
-  chainId: number;
-  tokenId: string;
-  name?: string;
-  ownerAddress: string;
-  agentURI?: string;
-  score?: number;
-  createdAt?: string;
+  id: string;
+  agent_id: string; // "{chainId}:{registryAddress}:{tokenId}"
+  token_id: string;
+  chain_id: number;
+  chain_type: string;
+  contract_address: string;
+  is_testnet: boolean;
+  owner_address: string;
+  owner_ens: string | null;
+  owner_username: string | null;
+  owner_avatar_url: string | null;
+  name: string | null;
+  description: string | null;
+  image_url: string | null;
+  is_verified: boolean;
+  star_count: number;
+  supported_protocols: string[];
+  x402_supported: boolean;
+  total_score: number;
+  rank: number | null;
+  network_rank: number | null;
+  health_score: number | null;
+  total_feedbacks: number;
+  average_score: number;
+  created_at: string;
+  updated_at: string;
   [key: string]: unknown;
 }
 

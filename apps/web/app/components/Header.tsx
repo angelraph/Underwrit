@@ -6,6 +6,7 @@ import { WalletButton } from "./WalletButton";
 
 const NAV_LINKS = [
   { href: "/categories", label: "Browse" },
+  { href: "/discover", label: "Discover" },
   { href: "/arena", label: "Arena" },
   { href: "/opportunities", label: "Opportunities" },
   { href: "/advantage-report", label: "Advantage Report" },
