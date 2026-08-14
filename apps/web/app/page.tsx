@@ -61,7 +61,16 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        <Link
+          href="/discover"
+          className="rounded-lg border border-border bg-surface p-5 hover:border-accent/40 transition-colors"
+        >
+          <div className="font-medium">Discover on BSC</div>
+          <div className="text-muted mt-1">
+            200,000+ real ERC-8004 agents already registered — the actual discoverability problem.
+          </div>
+        </Link>
         <Link
           href="/arena"
           className="rounded-lg border border-border bg-surface p-5 hover:border-accent/40 transition-colors"
