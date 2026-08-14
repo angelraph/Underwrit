@@ -51,6 +51,11 @@ export const PANCAKESWAP_V3_TESTNET = {
   quoterV2: "0xbC203d7f83677c7ed3F7acEc959963E7F4ECC5C2", // VERIFIED: CONTRACT NAME "QuoterV2", Exact Match
   nonfungiblePositionManager: "0x427bF5b37357632377eCbEC9de3626C71A5396c1", // VERIFIED: CONTRACT NAME "NonfungiblePositionManager", Exact Match, symbol "PCS-V3-POS"
   WBNB: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd", // VERIFIED on-chain: name="Wrapped BNB", symbol="WBNB", decimals=18
+  // The 0.01% fee tier is the only one of the four standard tiers with real
+  // liquidity on this WBNB/USDT pair (checked via Factory.getPool across all
+  // four during the Rebalancer/Grid Trading builds) — the Rebalancer and
+  // Grid Trading agents both operate exclusively on this pool.
+  wbnbUsdtPool001Pct: "0xCed0844e421F856D2de472F9e7037f873987887C",
 } as const;
 
 /** Venus-testnet USDT — the token PancakeSwap's own WBNB/USDT pools on BSC Testnet are paired against. */

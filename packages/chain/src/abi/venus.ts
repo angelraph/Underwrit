@@ -22,6 +22,7 @@ export const vBnbAbi = parseAbi([
   "function borrowBalanceStored(address account) view returns (uint256)",
   "function balanceOf(address account) view returns (uint256)",
   "function exchangeRateStored() view returns (uint256)",
+  "function supplyRatePerBlock() view returns (uint256)",
 ]);
 
 /** vBEP20 markets (e.g. vUSDT) — amounts as uint256, requires underlying ERC20 approval first. */
@@ -33,6 +34,7 @@ export const vBep20Abi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
   "function exchangeRateStored() view returns (uint256)",
   "function underlying() view returns (address)",
+  "function supplyRatePerBlock() view returns (uint256)",
 ]);
 
 export const erc20Abi = parseAbi([
