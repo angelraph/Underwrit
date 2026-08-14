@@ -6,13 +6,13 @@ import { getAllAgents } from "../lib/agents";
 // build-time snapshot of the leaderboard.
 export const dynamic = "force-dynamic";
 
-const SCENARIO_LABEL: Record<string, string> = {
-  REBALANCING: "Simulated LP position, market moves ±8%",
-  GRID: "Fixed range, capital, and trading period across all entrants",
-  YIELD: "Identical capital and constraints, free allocation choice",
-  HEALTH_FACTOR: "Identical lending position, volatility injected",
-};
-
+// A standardized, identical-conditions scenario runner per category
+// (the `ArenaRun` model exists in the schema for exactly this) hasn't been
+// built yet — every agent's ranking below is each agent's own real,
+// independently-verified organic on-chain evidence, not a head-to-head
+// run under matched capital/timing/market conditions. Framed honestly as
+// that until the scenario runner is real, rather than claiming a
+// standardization that doesn't exist yet.
 const METRIC_LABEL: Record<string, string> = {
   REBALANCING: "Net yield vs. baseline",
   GRID: "Realized PnL",
@@ -26,10 +26,12 @@ export default async function ArenaPage() {
     <div className="mx-auto max-w-5xl px-6 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">Agent Arena</h1>
       <p className="mt-2 text-muted max-w-2xl">
-        Every listed agent is periodically challenged with the same
-        standardized, real task per category — not synthetic
-        &quot;hello world&quot; benchmarks. Same capital, same constraints,
-        same conditions, so results are actually comparable.
+        Ranked by each agent&apos;s own real, independently-verified on-chain
+        evidence — not a synthetic benchmark. A standardized head-to-head
+        scenario (identical capital, timing, and market conditions per
+        category) is planned but not built yet, so these numbers reflect
+        each agent&apos;s actual organic operating history, not a matched
+        comparison. Every figure traces back to a real transaction.
       </p>
 
       <div className="mt-10 flex flex-col gap-10">
@@ -40,7 +42,6 @@ export default async function ArenaPage() {
           return (
             <section key={category}>
               <h2 className="text-lg font-medium">{CATEGORY_LABELS[category]}</h2>
-              <p className="text-sm text-muted mt-1">{SCENARIO_LABEL[category]}</p>
 
               <div className="mt-4 overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">

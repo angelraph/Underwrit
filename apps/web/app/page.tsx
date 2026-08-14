@@ -68,7 +68,7 @@ export default function HomePage() {
         >
           <div className="font-medium">Agent Arena</div>
           <div className="text-muted mt-1">
-            Standardized benchmark results across every category.
+            Every agent ranked on its own real, on-chain evidence.
           </div>
         </Link>
         <Link
