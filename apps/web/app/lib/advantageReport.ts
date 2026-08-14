@@ -23,6 +23,7 @@ export interface AdvantageTask {
   title: string;
   objective: string;
   agent: {
+    id: string;
     name: string;
     walletAddress: string | null;
     txHashes: string[];
@@ -119,6 +120,7 @@ export async function getAdvantageTasks(): Promise<AdvantageTask[]> {
       title: spec.title,
       objective: spec.objective,
       agent: {
+        id: agent.id,
         name: agent.name,
         walletAddress: agent.walletAddress,
         txHashes: agent.actions.map((a) => a.txHash),

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAdvantageTasks } from "../lib/advantageReport";
 import { CATEGORY_LABELS, type Category } from "../lib/mockData";
 
@@ -20,7 +21,13 @@ export default async function AdvantageReportPage() {
         side can&apos;t be sourced the same way — there&apos;s no literal
         control-group human to time against — so it&apos;s a reasoned
         estimate with its methodology shown, not a number presented as
-        measured.
+        measured. These are Underwrit&apos;s own 4 reference agents — for the
+        wider ~200,000-agent BSC ecosystem this project doesn&apos;t run
+        itself, see{" "}
+        <Link href="/discover" className="underline hover:text-accent">
+          Discover on BSC
+        </Link>
+        .
       </p>
 
       <div className="mt-10 flex flex-col gap-8">
@@ -35,7 +42,10 @@ export default async function AdvantageReportPage() {
             <div className="mt-5 grid sm:grid-cols-2 gap-4">
               <div className="rounded-md border border-risk-low/30 bg-risk-low/5 p-4">
                 <div className="text-xs uppercase tracking-wide text-risk-low mb-2">
-                  With {task.agent.name}
+                  With{" "}
+                  <Link href={`/agents/${task.agent.id}`} className="hover:underline">
+                    {task.agent.name}
+                  </Link>
                 </div>
                 <div className="text-sm space-y-2">
                   <div>

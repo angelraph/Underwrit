@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTopDiscoveredAgents, searchDiscoveredAgents, type DiscoveredAgent } from "../lib/discover";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +20,16 @@ export default async function DiscoverPage({
           8004scan
         </a>{" "}
         — over 200,000 of them exist and this is the actual discoverability problem the whole marketplace is
-        answering. These are separate from Underwrit&apos;s own 4 reference agents below: the scores and feedback
-        counts here are 8004scan&apos;s own reputation data, not evidence Underwrit has independently verified, so
-        they&apos;re never blended together.
+        answering. These are separate from{" "}
+        <Link href="/categories" className="underline hover:text-accent">
+          Underwrit&apos;s own 4 reference agents
+        </Link>
+        : the scores and feedback counts here are 8004scan&apos;s own reputation data, not evidence Underwrit has
+        independently verified (see the real{" "}
+        <Link href="/advantage-report" className="underline hover:text-accent">
+          Agent Advantage Report
+        </Link>{" "}
+        for that), so the two are never blended together.
       </p>
 
       <form className="mt-6 flex gap-2" action="/discover">
