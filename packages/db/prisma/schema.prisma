@@ -110,6 +110,7 @@ model Counterfactual {
   baselineOutcome  Float
   actualOutcome    Float
   valueCreated     Float
+  unit             String @default("USD liquidity") // e.g. "USD liquidity", "% APY" — lets the UI label outcomes correctly per category instead of assuming one unit for all
 }
 
 model JobSpec {

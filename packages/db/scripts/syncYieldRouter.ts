@@ -15,7 +15,7 @@ import {
   Network,
   prisma,
 } from "@underwrit/db";
-import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
+import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
 const AGENT_WALLET = "0x2406b7d0Dbc0a501e39EbE9606Ae7a9bE258321e";
 const OWNER_WALLET = "0x9Ffe8BF12437D30dC0BB321EE9Ad76b488F664FB"; // human owner (angelraphael.bnb)
@@ -121,6 +121,30 @@ async function main() {
   console.log(
     `\nEvidence snapshot: confidence=${snapshot.confidenceScore} successRate=${(snapshot.successRate * 100).toFixed(0)}% actions=${snapshot.actionsExecuted}`,
   );
+
+  // Counterfactual: idle capital earns 0% by definition — a real, honest
+  // baseline that needs no invented comparison data (see CATEGORY_BASELINES.YIELD's
+  // own note on why the original "highest-TVL pool" baseline wasn't
+  // something this project could compute). Actual = the real supply APY
+  // read live from Venus at decision time (same 42.24% recorded on the
+  // EvidenceSnapshot above).
+  const supplyAction = await prisma.action.findFirst({
+    where: { agentId: agent.id, actionType: "supply_bnb" },
+  });
+  if (supplyAction) {
+    const existingCf = await prisma.counterfactual.findUnique({ where: { actionId: supplyAction.id } });
+    if (!existingCf) {
+      const cf = computeCounterfactual({
+        baselineScenario: CATEGORY_BASELINES.YIELD,
+        baselineOutcome: 0,
+        actualOutcome: 42.24,
+      });
+      await prisma.counterfactual.create({
+        data: { actionId: supplyAction.id, ...cf, unit: "% APY" },
+      });
+      console.log(`Counterfactual: "${cf.baselineScenario}" → value created +${cf.valueCreated.toFixed(2)}% APY`);
+    }
+  }
 
   await prisma.$disconnect();
 }

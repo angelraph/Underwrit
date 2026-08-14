@@ -24,6 +24,7 @@ export default async function AgentPassportPage({
     baselineOutcome: number;
     actualOutcome: number;
     valueCreated: number;
+    unit: string;
   } | null = null;
   try {
     counterfactual = await prisma.counterfactual.findFirst({
@@ -81,26 +82,26 @@ export default async function AgentPassportPage({
         {counterfactual ? (
           <>
             <p className="mt-3 text-sm text-muted">
-              Most recent protective action, compared against: &quot;
+              Most recent real action, compared against: &quot;
               {counterfactual.baselineScenario}&quot;.
             </p>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <div className="text-muted text-xs">Actual result</div>
                 <div className="mono-nums text-lg">
-                  {counterfactual.actualOutcome.toFixed(2)} USD liquidity
+                  {counterfactual.actualOutcome.toFixed(2)} {counterfactual.unit}
                 </div>
               </div>
               <div>
                 <div className="text-muted text-xs">Baseline (no action)</div>
                 <div className="mono-nums text-lg">
-                  {counterfactual.baselineOutcome.toFixed(2)} USD liquidity
+                  {counterfactual.baselineOutcome.toFixed(2)} {counterfactual.unit}
                 </div>
               </div>
               <div>
                 <div className="text-muted text-xs">Value created</div>
                 <div className="mono-nums text-lg text-accent">
-                  +{counterfactual.valueCreated.toFixed(2)} USD liquidity
+                  +{counterfactual.valueCreated.toFixed(2)} {counterfactual.unit}
                 </div>
               </div>
             </div>
