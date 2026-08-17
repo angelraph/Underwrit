@@ -14,6 +14,7 @@ import {
   Category,
   Network,
   prisma,
+  withDbRetry,
 } from "@underwrit/db";
 import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
@@ -149,7 +150,7 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch((e) => {
+withDbRetry(main, { label: "syncYieldRouter" }).catch((e) => {
   console.error(e);
   process.exit(1);
 });

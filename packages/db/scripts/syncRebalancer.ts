@@ -21,7 +21,7 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
-import { ActionResult, AgentSource, Category, Network, prisma } from "@underwrit/db";
+import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
 import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
 const AGENT_WALLET = "0x04E47e45A095E1edA69B0007d75aE55eE9320e75";
@@ -163,7 +163,7 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch((e) => {
+withDbRetry(main, { label: "syncRebalancer" }).catch((e) => {
   console.error(e);
   process.exit(1);
 });

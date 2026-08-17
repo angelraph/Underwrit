@@ -26,18 +26,18 @@ function Write-Log($msg) {
     Add-Content -Path $logFile -Value $line
 }
 
-# Grid Trading has no Sync entry yet — its DB Agent row needs a real
-# ERC-8004 agentId, which only comes from `bag deploy verify` after a
-# platform deploy slot frees up (still blocked as of this writing, see
-# project memory). Its monitor.ts still runs below — real transactions
-# keep landing on-chain either way — just not synced to Postgres until
-# that unblocks. Add "Sync" = "sync:grid-trading" here once
-# packages/db/scripts/syncGridTrading.ts exists.
+# Grid Trading's ERC-8004 identity was registered directly against the real
+# IdentityRegistry contract (apps/agents/gridtrading/app/agent/src/
+# registerIdentity.ts) instead of via `bag deploy verify`, since the BNB
+# trial platform's 3-concurrent-agent hosting cap was already full. See
+# packages/db/scripts/syncGridTrading.ts's header comment for the real,
+# independently-confirmed tx (BEP-721 tokenId 1839). Now synced like the
+# other three.
 $agents = @(
     @{ Name = "healthfactormonitor"; Sync = "sync:health-factor-guardian" },
     @{ Name = "yieldrouter"; Sync = "sync:yield-router" },
     @{ Name = "rebalancer"; Sync = "sync:rebalancer" },
-    @{ Name = "gridtrading"; Sync = $null }
+    @{ Name = "gridtrading"; Sync = "sync:grid-trading" }
 )
 
 Write-Log "=== Starting agent monitor run ==="

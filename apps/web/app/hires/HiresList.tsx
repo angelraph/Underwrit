@@ -20,6 +20,14 @@ export interface RealSession {
   revokeTxHash: string | null;
 }
 
+// Both grant and revoke happen on BSC Testnet (see altana.ts, BNB_TESTNET),
+// so every real tx hash the Altana SDK returns resolves directly here. Never
+// hand-build a BscScan URL from anything other than a hash we got straight
+// back from client.grantSession/revokeSession.
+function bscTestnetTxUrl(hash: string): string {
+  return `https://testnet.bscscan.com/tx/${hash}`;
+}
+
 export function HiresList({ sessions, agents }: { sessions: RealSession[]; agents: MockAgent[] }) {
   const { address, getSigner } = useAltanaWallet();
   const [revoking, setRevoking] = useState<string | null>(null);
@@ -105,10 +113,28 @@ export function HiresList({ sessions, agents }: { sessions: RealSession[]; agent
 
             <div className="mt-3 flex items-center justify-between text-xs text-muted">
               <span>Expires {new Date(session.expiry).toLocaleString()}</span>
-              {session.grantTxHash && <span className="mono-nums">grant tx {session.grantTxHash.slice(0, 10)}…</span>}
+              {session.grantTxHash && (
+                <a
+                  href={bscTestnetTxUrl(session.grantTxHash)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mono-nums underline hover:text-accent transition-colors"
+                >
+                  grant tx {session.grantTxHash.slice(0, 10)}…
+                </a>
+              )}
             </div>
             {isRevoked && session.revokeTxHash && (
-              <div className="mt-1 text-xs text-muted mono-nums">revoke tx {session.revokeTxHash.slice(0, 10)}…</div>
+              <div className="mt-1 text-xs text-muted mono-nums">
+                <a
+                  href={bscTestnetTxUrl(session.revokeTxHash)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-accent transition-colors"
+                >
+                  revoke tx {session.revokeTxHash.slice(0, 10)}…
+                </a>
+              </div>
             )}
 
             {errors[session.id] && <p className="mt-2 text-xs text-risk-high">{errors[session.id]}</p>}
