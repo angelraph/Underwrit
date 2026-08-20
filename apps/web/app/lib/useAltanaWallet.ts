@@ -32,6 +32,9 @@ export function useAltanaWallet() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+      // localStorage doesn't exist during SSR, so this can't be a lazy
+      // useState initializer; it has to run after mount.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setWallet(JSON.parse(raw) as StoredWallet);
     } catch {
       // corrupted/unavailable storage — treat as no wallet rather than crash

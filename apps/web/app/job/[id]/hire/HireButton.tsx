@@ -11,7 +11,7 @@ const MIN_BALANCE_WEI = parseEther("0.01"); // covers the grant tx's own gas
 
 const publicClient = createPublicClient({ chain: BNB_TESTNET.chain, transport: http(BNB_TESTNET.publicRpcUrl) });
 
-type Phase = "loading" | "no-wallet" | "creating" | "checking-balance" | "needs-funds" | "ready" | "granting" | "error";
+type Phase = "creating" | "checking-balance" | "needs-funds" | "ready" | "granting" | "error";
 
 export function HireButton({
   jobSpecId,
@@ -28,23 +28,22 @@ export function HireButton({
 }) {
   const router = useRouter();
   const { address, loading: walletLoading, create, getSigner } = useAltanaWallet();
-  const [phase, setPhase] = useState<Phase>("loading");
+  const [phase, setPhase] = useState<Phase>("checking-balance");
   const [balance, setBalance] = useState<bigint | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const checkBalance = useCallback(async (addr: Address) => {
-    setPhase("checking-balance");
     const bal = await publicClient.getBalance({ address: addr });
     setBalance(bal);
     setPhase(bal >= MIN_BALANCE_WEI ? "ready" : "needs-funds");
   }, []);
 
   useEffect(() => {
-    if (walletLoading) return;
-    if (!address) {
-      setPhase("no-wallet");
-      return;
-    }
+    if (walletLoading || !address) return;
+    // checkBalance is an async read against live chain state (an external
+    // system); its setState calls only run after the awaited RPC call
+    // resolves, not synchronously within this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkBalance(address as Address).catch(() => setPhase("error"));
   }, [address, walletLoading, checkBalance]);
 
@@ -53,10 +52,11 @@ export function HireButton({
     setError(null);
     try {
       const wallet = await create();
+      setPhase("checking-balance");
       await checkBalance(wallet.address);
     } catch {
-      setError("Couldn't create a wallet — try again.");
-      setPhase("no-wallet");
+      setError("Couldn't create a wallet. Try again.");
+      setPhase("checking-balance");
     }
   }
 
@@ -64,7 +64,7 @@ export function HireButton({
     if (!address) return;
     const signer = getSigner();
     if (!signer) {
-      setError("Wallet signer unavailable — try reconnecting.");
+      setError("Wallet signer unavailable. Try reconnecting.");
       return;
     }
 
@@ -119,11 +119,11 @@ export function HireButton({
     }
   }
 
-  if (phase === "loading" || walletLoading) {
+  if (walletLoading) {
     return <div className="mt-8 text-sm text-muted">Loading wallet…</div>;
   }
 
-  if (phase === "no-wallet" || phase === "creating") {
+  if (!address || phase === "creating") {
     return (
       <div className="mt-8">
         <button
@@ -148,7 +148,7 @@ export function HireButton({
         <p>
           Your wallet needs a little testnet BNB to cover the grant transaction&apos;s gas
           {balance !== null && (
-            <> — currently holds {formatEther(balance)} tBNB, needs at least {formatEther(MIN_BALANCE_WEI)}.</>
+            <>. Currently holds {formatEther(balance)} tBNB, needs at least {formatEther(MIN_BALANCE_WEI)}.</>
           )}
         </p>
         <p className="mt-2 mono-nums break-all text-xs text-muted">{address}</p>
@@ -162,10 +162,14 @@ export function HireButton({
             Open testnet faucet
           </a>
           <button
-            onClick={() => address && checkBalance(address as Address)}
+            onClick={() => {
+              if (!address) return;
+              setPhase("checking-balance");
+              checkBalance(address as Address).catch(() => setPhase("error"));
+            }}
             className="flex-1 rounded-md bg-accent-dim text-background px-3 py-2 hover:bg-accent transition-colors"
           >
-            I&apos;ve funded it — check again
+            I&apos;ve funded it, check again
           </button>
         </div>
       </div>
