@@ -28,6 +28,7 @@ export function JobContractForm({
     e.preventDefault();
     setError(null);
 
+    const formEl = e.currentTarget;
     let userAddress = address;
     if (!userAddress) {
       try {
@@ -39,7 +40,7 @@ export function JobContractForm({
       }
     }
 
-    const form = new FormData(e.currentTarget);
+    const form = new FormData(formEl);
     setSubmitting(true);
     try {
       const res = await fetch("/api/jobs", {
