@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",
+    "@altananetwork/x402-server": "^0.2.0",
     "@underwrit/chain": "*",
     "@underwrit/db": "*",
     "@underwrit/evidence-engine": "*",
