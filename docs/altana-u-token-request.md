@@ -10,7 +10,11 @@ PancakeSwap testnet liquidity for it either.
 
 Hi — building Underwrit for BNB Chain's "Build the Era" hackathon (agent
 marketplace, github.com/angelraph/Underwrit). Going for the Altana bonus
-track items: ERC-8183 buyer-side hiring and selling over x402/B402.
+track items: ERC-8183 buyer-side hiring and selling over x402/B402. Both are
+fully coded and ready (hireAgentViaErc8183 in apps/web/app/lib/erc8183.ts,
+and a live x402 sell endpoint already answering real 402 challenges at
+/api/x402/evidence/[agentId]) — the only thing blocking a real end-to-end
+test of either is funding.
 
 Both need a wallet holding real testnet $U to actually test end to end
 (hireErc8183Agent needs it to fund a job; verifying our own x402 sell
