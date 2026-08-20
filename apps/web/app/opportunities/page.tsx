@@ -68,7 +68,7 @@ export default async function OpportunitiesPage() {
         )}
 
         {rebalancer && (
-          <div className="mt-6 flex items-center justify-between border-t border-border pt-5">
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border pt-5">
             <div className="text-sm">
               <span className="text-muted">Manages the active tier today: </span>
               <Link href={`/agents/${rebalancer.id}`} className="hover:text-accent transition-colors">
@@ -80,7 +80,7 @@ export default async function OpportunitiesPage() {
             </div>
             <Link
               href={`/job/new?category=REBALANCING`}
-              className="rounded-md bg-accent-dim text-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
+              className="shrink-0 text-center rounded-md bg-accent-dim text-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
             >
               Hire
             </Link>

@@ -73,10 +73,10 @@ export default async function JobResultsPage({
               key={r.agentId}
               className="rounded-lg border border-border bg-surface p-5"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-muted text-sm w-5">{i + 1}.</span>
-                  <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-muted text-sm w-5 shrink-0">{i + 1}.</span>
+                  <div className="min-w-0">
                     <Link
                       href={`/agents/${agent.id}`}
                       className="font-medium hover:text-accent transition-colors"
@@ -89,7 +89,7 @@ export default async function JobResultsPage({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 shrink-0">
                   <RiskBadge risk={agent.risk} />
                   <div className="text-right">
                     <div className="mono-nums text-xl font-semibold text-accent">
