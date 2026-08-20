@@ -29,6 +29,12 @@ export interface MockAgent {
   source: "OURS" | "THIRD_PARTY";
   confidenceScore: number;
   daysObserved: number;
+  /** Real span since this agent's earliest logged EvidenceSnapshot, i.e. how
+   * long it's actually been live and monitored — distinct from daysObserved,
+   * which only spans real Actions and stays low for an agent that's
+   * correctly done nothing because nothing needed doing. Undefined for mock
+   * agents, which have no snapshot history to derive it from. */
+  daysMonitored?: number;
   capitalTested: number;
   actionsExecuted: number;
   actionsSucceeded: number;

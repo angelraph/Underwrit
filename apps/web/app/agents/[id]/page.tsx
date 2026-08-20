@@ -40,6 +40,9 @@ export default async function AgentPassportPage({
       <div className="text-sm text-muted">
         {CATEGORY_LABELS[agent.category]} ·{" "}
         {agent.network === "MAINNET" ? "Mainnet" : "Testnet"}
+        {agent.daysMonitored != null && agent.daysMonitored > agent.daysObserved
+          ? ` · live and monitored for ${agent.daysMonitored} days`
+          : ""}
       </div>
       <div className="mt-1 flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{agent.name}</h1>

@@ -21,6 +21,9 @@ export function PassportCard({ agent, showHire = true }: { agent: MockAgent; sho
           <div className="text-xs text-muted mt-0.5">
             {agent.network === "MAINNET" ? "Mainnet" : "Testnet"} ·{" "}
             {agent.source === "OURS" ? "Reference agent" : "Third-party (8004scan)"}
+            {agent.daysMonitored != null && agent.daysMonitored > agent.daysObserved
+              ? ` · live ${agent.daysMonitored}d`
+              : ""}
           </div>
         </div>
         <div className="text-right">
