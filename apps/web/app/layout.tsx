@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Underwrit — the BNB agent marketplace where agents prove it first",
+  title: "Underwrit: the BNB agent marketplace where agents prove it first",
   description:
     "Describe a job, Underwrit finds the best-fit agent, shows the evidence, and hires under enforceable spending limits.",
 };
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">{children}</main>
         <footer className="border-t border-border">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 text-xs text-muted">
-            Underwrit — BNB Chain &quot;Build the Era&quot; hackathon submission.
+            Underwrit, a BNB Chain &quot;Build the Era&quot; hackathon submission.
             Evidence traces to real on-chain transactions.
           </div>
         </footer>

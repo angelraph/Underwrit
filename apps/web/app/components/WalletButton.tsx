@@ -25,7 +25,7 @@ export function WalletButton() {
         onClick={() => create().catch(() => {})}
         disabled={creating}
         className="rounded-md border border-border px-3 py-1.5 text-sm hover:border-accent/50 transition-colors disabled:opacity-60"
-        title={error ?? "Create a real BSC Testnet wallet with a passkey — no seed phrase, no extension"}
+        title={error ?? "Create a real BSC Testnet wallet with a passkey. No seed phrase, no extension."}
       >
         {creating ? "Creating wallet…" : "Connect Wallet"}
       </button>

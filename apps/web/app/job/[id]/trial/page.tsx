@@ -92,14 +92,14 @@ export default async function TrialPage({
       </h1>
       <p className="mt-2 text-muted">
         {live
-          ? "A real, gas-free dry run of this agent's actual decision logic against live chain state — not a replay of old numbers. Nothing here signs or spends."
-          : "This agent has no live wallet to dry-run yet — showing its historical track record instead."}
+          ? "A real, gas-free dry run of this agent's actual decision logic against live chain state, not a replay of old numbers. Nothing here signs or spends."
+          : "This agent has no live wallet to dry-run yet. Showing its historical track record instead."}
       </p>
 
       {live && (
         <div className="mt-8 rounded-lg border border-accent/30 bg-accent/5 p-5">
           <div className="flex items-center justify-between">
-            <div className="text-xs uppercase tracking-wide text-muted">Live decision — right now</div>
+            <div className="text-xs uppercase tracking-wide text-muted">Live decision, right now</div>
             <span
               className={`text-xs rounded-full border px-2 py-0.5 ${
                 live.wouldAct ? "border-accent/40 text-accent bg-accent/10" : "border-border text-muted"
@@ -123,7 +123,7 @@ export default async function TrialPage({
 
       <div className="mt-6 rounded-lg border border-border bg-surface p-5">
         <div className="text-sm font-medium">
-          Track record — {agent.daysObserved} days of observed activity
+          Track record: {agent.daysObserved} days of observed activity
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>

@@ -15,13 +15,13 @@ export default async function AdvantageReportPage() {
       </h1>
       <p className="mt-3 text-muted max-w-2xl">
         Three real tasks, each executed for real on BSC Testnet by an
-        Underwrit reference agent — every transaction hash below is
+        Underwrit reference agent. Every transaction hash below is
         independently checkable on-chain. The agent side of each comparison
         is pulled live from this database, never hand-written. The manual
-        side can&apos;t be sourced the same way — there&apos;s no literal
-        control-group human to time against — so it&apos;s a reasoned
+        side can&apos;t be sourced the same way: there&apos;s no literal
+        control-group human to time against, so it&apos;s a reasoned
         estimate with its methodology shown, not a number presented as
-        measured. These are Underwrit&apos;s own 4 reference agents — for the
+        measured. These are Underwrit&apos;s own 4 reference agents. For the
         wider ~200,000-agent BSC ecosystem this project doesn&apos;t run
         itself, see{" "}
         <Link href="/discover" className="underline hover:text-accent">

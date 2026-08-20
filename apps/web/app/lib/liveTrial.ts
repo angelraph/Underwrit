@@ -70,8 +70,8 @@ export async function runHealthFactorTrial(agentWallet: Address): Promise<Health
     shortfallUsd: toDecimalString(shortfall),
     wouldAct,
     reasoning: wouldAct
-      ? `Position is ${tier} right now (${toDecimalString(liquidity)} USD spare liquidity) — the guardian would repay on its next real check`
-      : `Position is ${tier} (${toDecimalString(liquidity)} USD spare liquidity, ${(safetyBufferUsd * 3).toFixed(0)} USD buffer for HEALTHY) — no action needed right now`,
+      ? `Position is ${tier} right now (${toDecimalString(liquidity)} USD spare liquidity). The guardian would repay on its next real check.`
+      : `Position is ${tier} (${toDecimalString(liquidity)} USD spare liquidity, ${(safetyBufferUsd * 3).toFixed(0)} USD buffer for HEALTHY). No action needed right now.`,
   };
 }
 
@@ -118,7 +118,7 @@ export async function runYieldTrial(agentWallet: Address): Promise<YieldTrial> {
       vUsdtApyPct: usdtApy,
       bestMarket,
       wouldAct: false,
-      reasoning: `vUSDT currently wins (${usdtApy.toFixed(2)}%), but this agent has no BNB->USDT swap path wired yet — it would hold rather than fake a cross-asset move`,
+      reasoning: `vUSDT currently wins (${usdtApy.toFixed(2)}%), but this agent has no BNB->USDT swap path wired yet. It would hold rather than fake a cross-asset move.`,
     };
   }
 
@@ -131,7 +131,7 @@ export async function runYieldTrial(agentWallet: Address): Promise<YieldTrial> {
     bestMarket,
     wouldAct,
     reasoning: wouldAct
-      ? `vBNB wins at a real ${bnbApy.toFixed(2)}% supply APY — would supply ${formatEther(nativeBalance - RESERVE)} idle BNB right now`
+      ? `vBNB wins at a real ${bnbApy.toFixed(2)}% supply APY. Would supply ${formatEther(nativeBalance - RESERVE)} idle BNB right now.`
       : `vBNB wins (${bnbApy.toFixed(2)}%) but no idle BNB above its gas reserve to supply`,
   };
 }
@@ -170,7 +170,7 @@ export async function runRebalancerTrial(agentWallet: Address): Promise<Rebalanc
       position: null,
       inRange: null,
       wouldAct: true,
-      reasoning: "No position open — the agent would open one centered on the current price",
+      reasoning: "No position open. The agent would open one centered on the current price.",
     };
   }
 
@@ -197,8 +197,8 @@ export async function runRebalancerTrial(agentWallet: Address): Promise<Rebalanc
     inRange,
     wouldAct: !inRange,
     reasoning: inRange
-      ? `Position #${tokenId} is in range (tick ${tick} within [${tickLower}, ${tickUpper})) — no action needed right now`
-      : `Position #${tokenId} has drifted out of range (tick ${tick} outside [${tickLower}, ${tickUpper})) — the agent would remove and re-mint on its next real check`,
+      ? `Position #${tokenId} is in range (tick ${tick} within [${tickLower}, ${tickUpper})). No action needed right now.`
+      : `Position #${tokenId} has drifted out of range (tick ${tick} outside [${tickLower}, ${tickUpper})). The agent would remove and re-mint on its next real check.`,
   };
 }
 
@@ -236,6 +236,6 @@ export async function runGridTrial(): Promise<GridTrial> {
     level,
     targetWbnbFraction: target,
     wouldAct: true, // exact action depends on current holdings vs. target — see the agent's own real evidence for its actual last trade
-    reasoning: `At level ${level.toFixed(2)}, target allocation is ${(target * 100).toFixed(0)}% WBNB — the agent buys more as price falls through levels, sells into strength as it rises`,
+    reasoning: `At level ${level.toFixed(2)}, target allocation is ${(target * 100).toFixed(0)}% WBNB. The agent buys more as price falls through levels, sells into strength as it rises.`,
   };
 }

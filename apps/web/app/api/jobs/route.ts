@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   if (!body.userAddress || !isAddress(body.userAddress)) {
-    return NextResponse.json({ error: "userAddress must be a valid 0x address — connect a wallet first" }, { status: 400 });
+    return NextResponse.json({ error: "userAddress must be a valid 0x address. Connect a wallet first." }, { status: 400 });
   }
   if (!(body.category in Category)) {
     return NextResponse.json({ error: `unknown category "${body.category}"` }, { status: 400 });

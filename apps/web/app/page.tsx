@@ -23,7 +23,7 @@ export default function HomePage() {
             </h1>
             <p className="mt-3 text-muted">
               Describe a job and its constraints. Underwrit scores every eligible
-              agent on real evidence — not a profile — then hires the winner
+              agent on real evidence, not a profile, then hires the winner
               under a spending cap you set and can revoke.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function HomePage() {
           >
             <div className="font-medium">Discover on BSC</div>
             <div className="text-muted mt-1">
-              200,000+ real ERC-8004 agents already registered — the actual discoverability problem.
+              200,000+ real ERC-8004 agents already registered, and no real way to find them yet.
             </div>
           </Link>
           <Link

@@ -18,8 +18,8 @@ export default async function DiscoverPage({
         Real ERC-8004 agents already registered on BSC mainnet, pulled live from{" "}
         <a href="https://8004scan.io" target="_blank" rel="noreferrer" className="underline hover:text-accent">
           8004scan
-        </a>{" "}
-        — over 200,000 of them exist and this is the actual discoverability problem the whole marketplace is
+        </a>
+        . Over 200,000 of them exist, and this is the actual discoverability problem the whole marketplace is
         answering. These are separate from{" "}
         <Link href="/categories" className="underline hover:text-accent">
           Underwrit&apos;s own 4 reference agents
@@ -58,7 +58,7 @@ export default async function DiscoverPage({
         <p className="mt-8 text-sm text-muted">
           {q
             ? `No BSC mainnet agents found matching "${q}".`
-            : "8004scan is unreachable or rate-limited right now — try again shortly."}
+            : "8004scan is unreachable or rate-limited right now. Try again shortly."}
         </p>
       )}
     </div>

@@ -36,7 +36,7 @@ export function HiresList({ sessions, agents }: { sessions: RealSession[]; agent
 
   async function handleRevoke(session: RealSession) {
     if (!session.altanaSessionId) {
-      setErrors((e) => ({ ...e, [session.id]: "No session key on record — nothing to revoke on-chain." }));
+      setErrors((e) => ({ ...e, [session.id]: "No session key on record. Nothing to revoke on-chain." }));
       return;
     }
     if (!address || session.walletAddress.toLowerCase() !== address.toLowerCase()) {
@@ -65,7 +65,7 @@ export function HiresList({ sessions, agents }: { sessions: RealSession[]; agent
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ revokeTxHash: result.transactionHash }),
       });
-      if (!res.ok) throw new Error("Revoked on-chain, but failed to update the record — refresh to check.");
+      if (!res.ok) throw new Error("Revoked on-chain, but failed to update the record. Refresh to check.");
 
       setLocalStatus((s) => ({ ...s, [session.id]: "REVOKED" }));
     } catch (e) {

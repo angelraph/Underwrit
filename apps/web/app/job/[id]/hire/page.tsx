@@ -26,14 +26,14 @@ export default async function HirePage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
-      <div className="text-sm text-muted">Hire — Altana session</div>
+      <div className="text-sm text-muted">Hire: Altana session</div>
       <h1 className="text-2xl font-semibold tracking-tight mt-1">
         {agent.name}
       </h1>
       <p className="mt-2 text-muted">
         This grants a scoped Altana session, not custody of your wallet.
         Everything below is enforced on-chain by the Keystore contract, not
-        just shown in this UI — checkable on{" "}
+        just shown in this UI. Checkable on{" "}
         <a href="https://explorer.altana.network" target="_blank" rel="noreferrer" className="underline hover:text-accent">
           Altana&apos;s explorer
         </a>
@@ -73,7 +73,7 @@ export default async function HirePage({
         />
       ) : (
         <p className="mt-8 text-sm text-muted rounded-md border border-border bg-surface p-4">
-          This agent doesn&apos;t have a real deployed wallet yet — hiring isn&apos;t available until it does.
+          This agent doesn&apos;t have a real deployed wallet yet. Hiring isn&apos;t available until it does.
         </p>
       )}
     </div>

@@ -27,7 +27,7 @@ export default async function ArenaPage() {
       <h1 className="text-2xl font-semibold tracking-tight">Agent Arena</h1>
       <p className="mt-2 text-muted max-w-2xl">
         Ranked by each agent&apos;s own real, independently-verified on-chain
-        evidence — not a synthetic benchmark. A standardized head-to-head
+        evidence, not a synthetic benchmark. A standardized head-to-head
         scenario (identical capital, timing, and market conditions per
         category) is planned but not built yet, so these numbers reflect
         each agent&apos;s actual organic operating history, not a matched
@@ -70,7 +70,7 @@ export default async function ArenaPage() {
                             ? `+${agent.netYieldPct.toFixed(1)}%`
                             : agent.avgReactionTimeSec > 0
                               ? `${agent.avgReactionTimeSec.toFixed(1)}s`
-                              : "— (not yet measured)"}
+                              : "(not yet measured)"}
                         </td>
                         <td className="px-4 py-3 mono-nums">{agent.confidenceScore}</td>
                       </tr>

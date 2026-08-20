@@ -18,7 +18,7 @@ export default async function OpportunitiesPage() {
       </h1>
       <p className="mt-2 text-muted max-w-2xl">
         Live PancakeSwap V3 pool state for WBNB/USDT on BSC Testnet, read
-        directly from the Factory and each pool contract — not a historical
+        directly from the Factory and each pool contract. Not a historical
         volume/imbalance estimate, which would need a subgraph this project
         doesn&apos;t run. What you can genuinely tell from a single on-chain
         read: which fee tiers actually have liquidity right now, and which
@@ -38,7 +38,7 @@ export default async function OpportunitiesPage() {
               <div className="flex items-center gap-3">
                 <span className="mono-nums font-medium">{t.feeLabel}</span>
                 <span className={t.exists ? "text-risk-low" : "text-muted"}>
-                  {t.exists ? "Active" : "Uninitialized — no LP yet"}
+                  {t.exists ? "Active" : "Uninitialized, no LP yet"}
                 </span>
               </div>
               {t.exists ? (
@@ -62,7 +62,7 @@ export default async function OpportunitiesPage() {
         {uninitialized.length > 0 && (
           <p className="mt-4 text-xs text-muted">
             {uninitialized.map((t) => t.feeLabel).join(", ")} {uninitialized.length === 1 ? "tier has" : "tiers have"} zero
-            liquidity on this pair right now — whoever initializes {uninitialized.length === 1 ? "it" : "one"} first captures
+            liquidity on this pair right now. Whoever initializes {uninitialized.length === 1 ? "it" : "one"} first captures
             100% of that tier&apos;s fee revenue with no competition, at least until someone else notices too.
           </p>
         )}
@@ -75,7 +75,7 @@ export default async function OpportunitiesPage() {
                 {rebalancer.name}
               </Link>
               <div className="text-xs text-muted mt-0.5">
-                Real, deployed, currently running a concentrated position on this exact pool — see its Performance Passport for the actual on-chain history.
+                Real, deployed, currently running a concentrated position on this exact pool. See its Performance Passport for the actual on-chain history.
               </div>
             </div>
             <Link
@@ -90,7 +90,7 @@ export default async function OpportunitiesPage() {
 
       {active.length === 0 && (
         <p className="mt-6 text-sm text-muted">
-          No initialized WBNB/USDT pool found on this fee tier set right now — check back once the reference pool is seeded.
+          No initialized WBNB/USDT pool found on this fee tier set right now. Check back once the reference pool is seeded.
         </p>
       )}
     </div>

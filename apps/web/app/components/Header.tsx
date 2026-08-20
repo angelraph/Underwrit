@@ -27,7 +27,7 @@ export function Header() {
     <header className="border-b border-border relative">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-baseline gap-2 shrink-0">
-          <span className="text-lg font-semibold tracking-tight">Underwrit</span>
+          <span className="text-[12px] font-bold tracking-[-0.2px] text-accent">Underwrit</span>
           <span className="text-xs text-muted hidden sm:inline">
             prove it before you hire it
           </span>

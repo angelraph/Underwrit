@@ -80,7 +80,7 @@ export default async function AgentPassportPage({
 
       <section className="mt-10 rounded-lg border border-border bg-surface p-5">
         <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
-          Counterfactual — what would&apos;ve happened without this agent
+          Counterfactual: what would&apos;ve happened without this agent
         </h2>
         {counterfactual ? (
           <>
@@ -111,7 +111,7 @@ export default async function AgentPassportPage({
           </>
         ) : (
           <p className="mt-3 text-sm text-muted">
-            No counterfactual recorded yet — this agent hasn&apos;t taken a
+            No counterfactual recorded yet. This agent hasn&apos;t taken a
             protective action with a measured baseline comparison.
           </p>
         )}

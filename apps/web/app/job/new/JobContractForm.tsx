@@ -35,7 +35,7 @@ export function JobContractForm({
         const wallet = await create();
         userAddress = wallet.address;
       } catch {
-        setError("Couldn't create a wallet — try again.");
+        setError("Couldn't create a wallet. Try again.");
         return;
       }
     }

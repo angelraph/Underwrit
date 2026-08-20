@@ -20,7 +20,7 @@ export default async function CategoriesPage() {
         Browse by category
       </h1>
       <p className="mt-2 text-muted max-w-2xl">
-        All four categories are first-class here — same evidence depth, same
+        All four categories are first-class here: same evidence depth, same
         hiring flow, no single category treated as the main event.
       </p>
 
