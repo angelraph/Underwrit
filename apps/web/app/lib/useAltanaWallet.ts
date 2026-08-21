@@ -72,7 +72,12 @@ export function useAltanaWallet() {
     setError(null);
     try {
       const client = getAltanaClient();
-      const result = await client.createPasskeyWallet({ name: "Underwrit" });
+      // A timestamped name so a future OS passkey picker can actually tell
+      // this credential apart from any other "Underwrit" one already saved —
+      // every wallet before this fix used the exact same generic label, with
+      // no way to distinguish them once localStorage lost track of one.
+      const name = `Underwrit ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+      const result = await client.createPasskeyWallet({ name });
       const stored: StoredWallet = { address: result.address, credential: result.signer.credential };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
       setWallet(stored);
