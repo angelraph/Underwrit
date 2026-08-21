@@ -152,6 +152,13 @@ export function HireButton({
           )}
         </p>
         <p className="mt-2 mono-nums break-all text-xs text-muted">{address}</p>
+        <p className="mt-3 text-xs text-muted">
+          Heads up: BNB Chain&apos;s testnet faucet only pays out to an address that already
+          holds a small amount of real mainnet BNB (it&apos;s an anti-abuse check on their
+          side, not ours). If you don&apos;t have any mainnet BNB in another wallet, claim
+          testnet BNB to a wallet that does, then send a small amount over to the address
+          above.
+        </p>
         <div className="mt-3 flex gap-2">
           <a
             href={BSC_TESTNET_FAUCET_URL}
