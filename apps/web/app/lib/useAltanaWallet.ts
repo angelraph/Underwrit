@@ -43,30 +43,42 @@ export function useAltanaWallet() {
     }
   }, []);
 
-  const create = useCallback(async (): Promise<StoredWallet> => {
+  // createPasskeyWallet always registers a brand-new WebAuthn credential,
+  // which always means a brand-new smart-account address, so it must never
+  // be a silent fallback for a failed/ambiguous recovery attempt — that
+  // just breeds more orphaned wallets. recover() and create() are kept as
+  // two separate, explicit actions instead of one that guesses.
+  const recover = useCallback(async (): Promise<StoredWallet> => {
     setCreating(true);
     setError(null);
     try {
       const client = getAltanaClient();
-      // createPasskeyWallet always registers a brand-new WebAuthn credential,
-      // which always means a brand-new smart-account address — even for
-      // someone who already has a wallet, if localStorage lost track of it
-      // (a new browser profile, cleared site data, a different device).
-      // Try recovering the existing passkey first, so "Connect Wallet"
-      // reconnects to the same wallet whenever the OS/browser still has the
-      // credential, and only mints a new one when there's truly none to find.
-      let result;
-      try {
-        result = await client.recoverFromPasskey();
-      } catch {
-        result = await client.createPasskeyWallet({ name: "Underwrit" });
-      }
+      const result = await client.recoverFromPasskey();
       const stored: StoredWallet = { address: result.address, credential: result.signer.credential };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
       setWallet(stored);
       return stored;
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to connect wallet";
+      const message = e instanceof Error ? e.message : "Couldn't find an existing wallet";
+      setError(message);
+      throw e;
+    } finally {
+      setCreating(false);
+    }
+  }, []);
+
+  const create = useCallback(async (): Promise<StoredWallet> => {
+    setCreating(true);
+    setError(null);
+    try {
+      const client = getAltanaClient();
+      const result = await client.createPasskeyWallet({ name: "Underwrit" });
+      const stored: StoredWallet = { address: result.address, credential: result.signer.credential };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+      setWallet(stored);
+      return stored;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to create wallet";
       setError(message);
       throw e;
     } finally {
@@ -84,5 +96,5 @@ export function useAltanaWallet() {
     return signerFromPasskey(wallet.credential);
   }, [wallet]);
 
-  return { address: wallet?.address ?? null, loading, creating, error, create, disconnect, getSigner };
+  return { address: wallet?.address ?? null, loading, creating, error, recover, create, disconnect, getSigner };
 }

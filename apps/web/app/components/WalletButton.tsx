@@ -19,7 +19,7 @@ function short(address: string): string {
  * Hire flow both read `address` from.
  */
 export function WalletButton() {
-  const { address, loading, creating, error, create, disconnect, getSigner } = useAltanaWallet();
+  const { address, loading, creating, error, recover, create, disconnect, getSigner } = useAltanaWallet();
   const [menuOpen, setMenuOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
@@ -77,14 +77,24 @@ export function WalletButton() {
 
   if (!address) {
     return (
-      <button
-        onClick={() => create().catch(() => {})}
-        disabled={creating}
-        className="rounded-md border border-border px-3 py-1.5 text-sm hover:border-accent/50 transition-colors disabled:opacity-60"
-        title={error ?? "Create a real BSC Testnet wallet with a passkey. No seed phrase, no extension."}
-      >
-        {creating ? "Creating wallet…" : "Connect Wallet"}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => recover().catch(() => {})}
+          disabled={creating}
+          className="rounded-md border border-border px-3 py-1.5 text-sm hover:border-accent/50 transition-colors disabled:opacity-60"
+          title={error ?? "Reconnect an existing passkey wallet — pick the one you've used with Underwrit before."}
+        >
+          {creating ? "Connecting…" : "Connect Wallet"}
+        </button>
+        <button
+          onClick={() => create().catch(() => {})}
+          disabled={creating}
+          className="text-xs text-muted hover:text-accent transition-colors disabled:opacity-60"
+          title="Only for a genuinely first-time wallet — this always makes a new one, no seed phrase, no extension."
+        >
+          New here?
+        </button>
+      </div>
     );
   }
 
