@@ -23,8 +23,7 @@ find a self-serve way to get any on BSC Testnet (chain 97) — no faucet, no
 public mint on the token contract, no DEX liquidity.
 
 Two addresses that could use a small amount:
-- Buyer/test wallet: [insert the Altana passkey wallet address you want to
-  test hiring from]
+- Buyer/test wallet: 0x404323dd6dcD39485bEf0E73C5BfD1Ff45F64136
 - x402 facilitator (settles our own sell endpoint's payments):
   0xbE3B8F9D79A51B21d972ba3EC973add9d9B02A3c
 
