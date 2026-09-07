@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Category } from "../../lib/mockData";
+import { guessCategoryFromObjective, type Category } from "../../lib/mockData";
 import { useAltanaWallet } from "../../lib/useAltanaWallet";
 
 export function JobContractForm({
@@ -18,11 +18,25 @@ export function JobContractForm({
 }) {
   const router = useRouter();
   const { address, loading: walletLoading, creating, create } = useAltanaWallet();
+  const [objective, setObjective] = useState(defaultObjective ?? "");
   const [category, setCategory] = useState<string>(
-    defaultCategory ?? categories[0]
+    defaultCategory ?? guessCategoryFromObjective(objective) ?? categories[0]
   );
+  // Once the user has picked a category themselves, typing more into the
+  // objective box should never silently override their choice — the guess
+  // is only ever a starting point, not a running auto-correct.
+  const [categoryTouched, setCategoryTouched] = useState(Boolean(defaultCategory));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handleObjectiveChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const value = e.target.value;
+    setObjective(value);
+    if (!categoryTouched) {
+      const guess = guessCategoryFromObjective(value);
+      if (guess) setCategory(guess);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -80,7 +94,8 @@ export function JobContractForm({
       <Field label="Objective">
         <textarea
           name="objective"
-          defaultValue={defaultObjective}
+          value={objective}
+          onChange={handleObjectiveChange}
           rows={2}
           placeholder='e.g. "I have $5,000 in BNB/USDT liquidity. Improve my yield."'
           className="w-full rounded-md border border-border bg-surface px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:border-accent/60"
@@ -90,7 +105,10 @@ export function JobContractForm({
       <Field label="Category">
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setCategoryTouched(true);
+          }}
           className="w-full rounded-md border border-border bg-surface px-4 py-3 text-sm focus:outline-none focus:border-accent/60"
         >
           {categories.map((c) => (

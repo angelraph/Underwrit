@@ -145,6 +145,88 @@ export const CATEGORY_ORDER: Category[] = [
   "HEALTH_FACTOR",
 ];
 
+// Keyword hints per category, checked against a freeform objective so the
+// Job Contract form can default its Category dropdown to something plausible
+// instead of silently sitting on CATEGORY_ORDER[0] regardless of what was
+// typed. This is a starting guess the user can always change, never a
+// substitute for them confirming it, and it never touches ranking itself —
+// computeJobFit still filters strictly on whatever category is actually
+// selected when the form is submitted.
+const CATEGORY_KEYWORDS: Record<Category, RegExp[]> = {
+  HEALTH_FACTOR: [
+    /liquidat/i,
+    /health factor/i,
+    /collateral/i,
+    /\brepay/i,
+    /undercollateral/i,
+    /\bborrow/i,
+    /\bloan\b/i,
+    /lending position/i,
+    /margin call/i,
+    /\bltv\b/i,
+    /loan.to.value/i,
+    /at risk of (getting )?liquidated/i,
+    /keep.*(loan|position).*safe/i,
+    /safe from liquidation/i,
+    /protect.*(position|collateral|loan)/i,
+  ],
+  GRID: [
+    /\bgrid\b/i,
+    /price ladder/i,
+    /\bdca\b/i,
+    /dollar.cost.averag/i,
+    /ladder strategy/i,
+    /buy low.*sell high/i,
+    /range trading/i,
+    /grid bot/i,
+    /price level/i,
+  ],
+  YIELD: [
+    /\byield\b/i,
+    /\bapy\b/i,
+    /\bapr\b/i,
+    /supply rate/i,
+    /\bfarm(ing)?\b/i,
+    /interest rate/i,
+    /passive income/i,
+    /maximi[sz]e.*(return|yield|apy)/i,
+    /best (return|rate|apy)/i,
+    /grow my (capital|money|funds)/i,
+    /earn (more|interest|yield)/i,
+    /compound(ing)?/i,
+    /put.*(capital|money|funds).*to work/i,
+  ],
+  REBALANCING: [
+    /rebalanc/i,
+    /liquidity position/i,
+    /\blp\b/i,
+    /concentrated liquidity/i,
+    /price range/i,
+    /impermanent loss/i,
+    /tick range/i,
+    /in.range|out.of.range/i,
+    /manage my (lp|position|liquidity)/i,
+    /v3 position/i,
+  ],
+};
+
+/** Best-effort category guess from a freeform job objective, or undefined if
+ * nothing matches strongly enough to guess. Picks whichever category has the
+ * most keyword hits; ties go to the earlier category in CATEGORY_ORDER. */
+export function guessCategoryFromObjective(objective: string): Category | undefined {
+  if (!objective.trim()) return undefined;
+  let best: Category | undefined;
+  let bestCount = 0;
+  for (const category of CATEGORY_ORDER) {
+    const count = CATEGORY_KEYWORDS[category].filter((re) => re.test(objective)).length;
+    if (count > bestCount) {
+      best = category;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
 export function protocolsFromPermissions(permissions: string[]): string[] {
   return Array.from(new Set(permissions.map((p) => p.split(":")[0].trim())));
 }
