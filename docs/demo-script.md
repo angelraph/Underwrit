@@ -1,4 +1,4 @@
-# Underwrit — Live Demo Script
+# Underwrit: Live Demo Script
 
 Target: under 5 minutes, matches the flow judges are told to expect (functionality + data quality + agent diversity, plus the three partner tracks). Every number shown on screen is real, pulled live from Postgres or read live from BSC Testnet. Nothing in this script is staged or scripted data.
 
@@ -6,7 +6,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 0:00 – Open on the landing page (`/`)
+## 0:00: Open on the landing page (`/`)
 
 **Say:** "Underwrit is the BNB agent marketplace where agents have to prove what they can do, with real evidence, not a profile, before anyone hires them. Right now there are over 200,000 ERC-8004 agents registered on BSC and no real way to compare them or trust them. That's the problem we're solving."
 
@@ -16,7 +16,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 0:45 – Job Contract → Job Fit (`/job/new` → `/job/[id]`)
+## 0:45: Job Contract to Job Fit (`/job/new` then `/job/[id]`)
 
 **Do:** Type an objective into the terminal bar, e.g. `Protect my Venus position from liquidation`, submit.
 
@@ -26,7 +26,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 1:30 – Performance Passport (`/agents/[id]`)
+## 1:30: Performance Passport (`/agents/[id]`)
 
 **Do:** Click into the top-ranked agent, ideally Health Factor Guardian, since it has the clearest before/after story (a real forced at-risk check that triggered a real repay).
 
@@ -42,7 +42,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 2:30 – Trial (`/job/[id]/trial`)
+## 2:30: Trial (`/job/[id]/trial`)
 
 **Do:** Run the Trial.
 
@@ -50,19 +50,19 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 3:15 – Hire (`/job/[id]/hire`) — the Altana moment
+## 3:15: Hire (`/job/[id]/hire`), the Altana moment
 
 **Say:** "Hiring isn't a database write, it's a real Altana session grant on BSC Testnet, with an on-chain-enforced spend cap, a call allowlist limited to the agent's own contracts, and an expiry. All visible, all revocable."
 
 **Do:** Walk through the Can/Cannot permission envelope on screen before clicking Hire. This is the screen Altana's judges are specifically told to look for.
 
-**[HANDOFF POINT — see note below]** Click Hire. This triggers a real WebAuthn passkey prompt. It needs an actual human click, not the mouse-driven walkthrough. Do this step live, in your own hands, during the real recording/demo rather than relying on any earlier automated pass.
+**[HANDOFF POINT, see note below]** Click Hire. This triggers a real WebAuthn passkey prompt. It needs an actual human click, not the mouse-driven walkthrough. Do this step live, in your own hands, during the real recording/demo rather than relying on any earlier automated pass.
 
 **Say (while the session grant confirms):** "That's a real `grantSession` transaction, addressable right now on Altana's explorer, not BscScan, since Altana's own Keystore explorer is the actual proof destination the judges confirmed for this track."
 
 ---
 
-## 4:00 – My Hires → Revoke (`/hires`)
+## 4:00: My Hires, then Revoke (`/hires`)
 
 **Do:** Show the active session: spend used vs. cap, expiry.
 
@@ -70,7 +70,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 ---
 
-## 4:30 – Close on breadth (10–15 seconds each, pick two or three depending on time)
+## 4:30: Close on breadth (10-15 seconds each, pick two or three depending on time)
 
 Pick whichever of these best fits the remaining time and the judges in the room:
 
@@ -83,7 +83,7 @@ Pick whichever of these best fits the remaining time and the judges in the room:
 
 ---
 
-## Handoff note — the one step that can't be automated
+## Handoff note: the one step that can't be automated
 
 The Hire click triggers a genuine WebAuthn passkey ceremony (no seed phrase, no browser extension). Browser automation can drive every other click in this script, but this one needs a real human hand on the mouse/keyboard at the moment of the click. The OS-level WebAuthn UI won't respond to a scripted click. **Do this step yourself, live**, whether in rehearsal or on the actual recording. Everything before and after it can be prepared/tested with automation.
 
