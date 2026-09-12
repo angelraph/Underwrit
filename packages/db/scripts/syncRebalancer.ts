@@ -70,6 +70,47 @@ const KNOWN_ACTIONS = [
     type: "mint_position",
     params: { protocol: "pancakeswap-v3", tokenId: "36830", tickLower: 189604, tickUpper: 190604, note: "re-mint with corrected sizing — dust dropped to ~0 USDT / ~0.00076 WBNB" },
   },
+  // Gap 2026-08-17 -> 2026-09-10: the agent's wallet took ~92 further real
+  // transactions on its own (nonce went from ~13 to 105) that were never
+  // added here, including at least one full remove+re-mint cycle (the
+  // position now live on-chain is tokenId 37332, not 36830 above). Found
+  // 2026-09-12 while investigating a real crash (see git history for
+  // pancake.ts's nfpmAbi fix) — reconstructing that gap needs an explorer
+  // API (this free public RPC's eth_getLogs is unusable, confirmed
+  // rejecting even a 50-block range), so it's left as a known, disclosed
+  // gap rather than guessed at. Only the four legs of the one dust-fold
+  // action below (independently verified this session) are added for now.
+  {
+    hash: "0xcb3f8c3023db8a603e28199f38fe4dbbc39f104c51912368a0f1cc127b8b7e3d",
+    type: "approve",
+    params: { token: "USDT", spender: "SmartRouter", amount: "17377264", purpose: "dust rebalancing swap ahead of fold into position 37332" },
+  },
+  {
+    hash: "0xd9d20cb1e1ede95c5d388f5c975a8407e49de86f999486026f1b489dacf49e69",
+    type: "swap_usdt_to_wbnb",
+    params: { protocol: "pancakeswap-v3", note: "rebalance idle dust to position 37332's own ratio before folding it in" },
+  },
+  {
+    hash: "0xcf34a97224d7104eed127fad5bf7fa31eeccffafcbb4de998457be5aed0356e4",
+    type: "approve",
+    params: { token: "USDT", spender: "NonfungiblePositionManager", amount: "43395625", purpose: "increaseLiquidity" },
+  },
+  {
+    hash: "0x09510366f9d0b298d8f5adb94dd145de435b9a19817b6da4100c21a7d05d4db1",
+    type: "approve",
+    params: { token: "WBNB", spender: "NonfungiblePositionManager", amount: "9679367716162755", purpose: "increaseLiquidity" },
+  },
+  {
+    hash: "0x7dc60c6e44e43b2ac570d975a26387e4727d6cbdfddbcc06718828a25bd2677a",
+    type: "deploy_idle_dust",
+    params: {
+      protocol: "pancakeswap-v3",
+      tokenId: "37332",
+      amount0Usdt: "43395625",
+      amount1Wbnb: "9679367716162755",
+      note: "increaseLiquidity — folded idle dust into the in-range position instead of leaving it idle. First real exercise of this code path; it had a latent bug (increaseLiquidity was missing from the hand-written nfpmAbi) that fatally crashed every monitor run from 2026-09-10 to 2026-09-11 until fixed this session.",
+    },
+  },
 ] as const;
 
 async function main() {
