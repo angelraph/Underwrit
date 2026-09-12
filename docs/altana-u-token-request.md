@@ -1,21 +1,42 @@
-# Testnet $U request — draft message for Altana Builders Telegram
+# Testnet $U request — RESOLVED 2026-09-12
 
-Send to the Altana Builders Telegram (t.me/+8nOYcIdypZliYjVh), or raise during
-office hours if that's sooner. Checked first and confirmed there's no
-self-serve path: no faucet for $U anywhere in the docs/SDK, no public mint
-function on the testnet token contract (0xc70B87...E5565 on chain 97), and no
-PancakeSwap testnet liquidity for it either.
+**Both bonus-track items (ERC-8183 buyer-side hire and x402/B402 sell) are
+now verified real, end-to-end, independently confirmed on-chain.** The
+history below is kept for the record; skip to the bottom for the resolution.
 
-**Update 2026-09-12**: Altana shipped SDK/MCP 0.9.0 (announced in the
-Builders Telegram), which this project has upgraded to. It ships
-`createPrivateKeySigner` — documented as "server-side or CLI use" — which
-removes the WebAuthn/browser dependency entirely: a fresh buyer/test wallet
-(`0xb33e52bb5dece784b735baB75A8Aa63f00f8210E` on BSC Testnet) was created
-this way and can drive the full requestTokens -> hire -> pay round trip from
-a script. Still blocked on the same thing as before: this wallet (and the
-x402 facilitator, see `docs/x402-facilitator-funding.md`) both need a small
-real tBNB funding before either can execute anything on-chain. Once funded,
-this becomes independently re-runnable without further manual steps.
+## Resolution (2026-09-12)
+
+Altana shipped SDK/MCP 0.9.0, fixing the exact relay error in the second
+follow-up below. Upgraded this project to it, then used the new
+`createPrivateKeySigner` (documented as "server-side or CLI use") to drive
+the whole flow from a script — no browser/WebAuthn needed at all. User
+funded a fresh buyer wallet (`0xb33e52bb5dece784b735baB75A8Aa63f00f8210E`)
+and the x402 facilitator with 0.02 tBNB each. Then, in order, every step
+independently verified against BSC Testnet directly (not just trusting the
+SDK's own reported status):
+
+1. **$U claim** — `requestTokens()` via `client.execute()`, the exact call
+   that hit the relay error before. Now `CONFIRMED`, tx
+   `0x4926460a784aecc001605b0d6d399ba58df59e307e9345549ba8c87ab4f4a12f`
+   (`status: success`). Buyer's $U balance: 0 -> 10 (read directly from the
+   token contract, not from the SDK's own report).
+2. **ERC-8183 hire** — `hireErc8183Agent`, buyer hiring Health Factor
+   Guardian's wallet (a real ERC-8004 identity on the same registry
+   ERC8183_ADDRESSES uses) for 2 $U. Tx
+   `0x39c905eb18850b6605308db39367226ce0144b6238e0dfba42126987132ca882`
+   (`status: success`, jobId `1218`). Buyer's $U: 10 -> 8.
+3. **x402 sell round trip** — granted a session with a $U spend permission,
+   approved $U as the session's ERC-1271 signature checker (required for
+   the eip3009 rail), then paid the live
+   `/api/x402/evidence/[agentId]` endpoint for real. HTTP 200, real
+   evidence history returned, settlement tx
+   `0x49b4353f2a25556d86e498e208d5252aac5eac3471c79b774372cdd0c119e3e5`
+   broadcast by the facilitator itself (`status: success`, gas paid from
+   its own funded balance). Buyer's $U: 8 -> 7.99 (exactly the 0.01 $U
+   price).
+
+Nothing here was assumed from an SDK success message alone — every balance
+change and every tx status above was re-read from BSC Testnet directly.
 
 ---
 
