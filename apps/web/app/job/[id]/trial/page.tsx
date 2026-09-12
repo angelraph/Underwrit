@@ -84,6 +84,19 @@ export default async function TrialPage({
 
   const live = await getLiveTrial(agent.category, agent.walletAddress);
 
+  // Same gap already fixed on the Passport page and Arena: daysObserved is
+  // the span between an agent's first/last real Action, which correctly
+  // stays low when nothing new needed doing, but reads as misleadingly
+  // thin here and badly skews the two rate-based estimates below (an
+  // agent with 8 actions in its first day of a 30-day monitored history
+  // would otherwise project 112 actions over the next 14 days). Use
+  // daysMonitored, the real span of continuous monitoring, whenever it is
+  // the more informative number.
+  const effectiveDays =
+    agent.daysMonitored != null && agent.daysMonitored > agent.daysObserved
+      ? agent.daysMonitored
+      : agent.daysObserved;
+
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">Trial</div>
@@ -123,7 +136,7 @@ export default async function TrialPage({
 
       <div className="mt-6 rounded-lg border border-border bg-surface p-5">
         <div className="text-sm font-medium">
-          Track record: {agent.daysObserved} days of observed activity
+          Track record: {effectiveDays} days of observed activity
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
@@ -141,16 +154,16 @@ export default async function TrialPage({
           <div>
             <div className="text-muted text-xs">Est. actions over 14 days</div>
             <div className="mono-nums text-lg">
-              {agent.daysObserved > 0
-                ? Math.round((agent.actionsExecuted / agent.daysObserved) * 14)
+              {effectiveDays > 0
+                ? Math.round((agent.actionsExecuted / effectiveDays) * 14)
                 : "not yet measured"}
             </div>
           </div>
           <div>
             <div className="text-muted text-xs">Est. total cost</div>
             <div className="mono-nums text-lg">
-              {agent.daysObserved > 0
-                ? `$${(agent.avgCost * Math.round((agent.actionsExecuted / agent.daysObserved) * 14)).toFixed(2)}`
+              {effectiveDays > 0
+                ? `$${(agent.avgCost * Math.round((agent.actionsExecuted / effectiveDays) * 14)).toFixed(2)}`
                 : "not yet measured"}
             </div>
           </div>
