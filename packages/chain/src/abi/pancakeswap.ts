@@ -1,11 +1,11 @@
 import { parseAbi } from "viem";
 
 /**
- * PancakeSwap V3 — read-only surface for the marketplace's own use
+ * PancakeSwap V3, read-only surface for the marketplace's own use
  * (Liquidity Opportunities screen). See `PANCAKESWAP_V3_TESTNET` in
  * addresses.ts for the verification notes on every address this pairs
  * with. Writes (swap, mint, etc.) live in each agent's own local copy of
- * this ABI, never here — this package is read-only by convention (see
+ * this ABI, never here, this package is read-only by convention (see
  * altana-keystore.ts's identical note).
  */
 export const pancakeV3FactoryAbi = parseAbi([
@@ -20,7 +20,7 @@ export const pancakeV3PoolAbi = parseAbi([
   "function token1() view returns (address)",
 ]);
 
-/** Read-only surface of NonfungiblePositionManager — enough to inspect a wallet's own LP position(s). */
+/** Read-only surface of NonfungiblePositionManager, enough to inspect a wallet's own LP position(s). */
 export const pancakeV3NfpmAbi = parseAbi([
   "function balanceOf(address owner) view returns (uint256)",
   "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",

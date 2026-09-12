@@ -11,7 +11,7 @@ import {
 import { getAllAgents } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
-// Real JobSpec, loaded fresh each view (never persisted JobFitResult rows —
+// Real JobSpec, loaded fresh each view (never persisted JobFitResult rows,
 // evidence changes over time, so ranking is recomputed live against
 // whatever the agents' current EvidenceSnapshots say, exactly like every
 // other real-evidence screen in this app).

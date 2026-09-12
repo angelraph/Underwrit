@@ -32,7 +32,7 @@ export default async function AgentPassportPage({
       orderBy: { id: "desc" },
     });
   } catch {
-    // DB unreachable — leave counterfactual null, page still renders.
+    // DB unreachable, leave counterfactual null, page still renders.
   }
 
   return (

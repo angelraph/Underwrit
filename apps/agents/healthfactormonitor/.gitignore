@@ -1,5 +1,5 @@
 # bnbagent-studio workspace defaults.
-# All agent secrets — the encrypted keystore AND .env.local — live HERE under
+# All agent secrets, the encrypted keystore AND .env.local, live HERE under
 # .studio/ at the workspace root, OUTSIDE app/agent (the deploy codeLocation),
 # so no deploy packaging path can bundle them. Never commit .studio/.
 .studio/

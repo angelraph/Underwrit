@@ -1,5 +1,5 @@
 /**
- * "What would've happened if this agent hadn't acted?" — the counterfactual
+ * "What would've happened if this agent hadn't acted?", the counterfactual
  * is what turns a reputation score into a value claim a judge (or a user)
  * can check the arithmetic on.
  */
@@ -21,14 +21,14 @@ export function computeCounterfactual(input: CounterfactualInput): Counterfactua
 }
 
 /**
- * Standard baselines per category — keep these consistent across all agents
+ * Standard baselines per category, keep these consistent across all agents
  * in a category so cross-agent comparison is fair.
  *
  * YIELD's baseline was originally "held in the single highest-TVL pool at
- * job start, no rebalancing" — a real, defensible comparison in principle,
+ * job start, no rebalancing", a real, defensible comparison in principle,
  * but not one this project can honestly compute yet (it would need real
  * TVL data across multiple pools at the moment capital arrived, which
- * nothing here tracks). Changed to "held idle, uninvested" — the baseline
+ * nothing here tracks). Changed to "held idle, uninvested", the baseline
  * that's actually true to what the agent's real v1 scope does (route idle
  * capital into the best real rate) and that a real number can be computed
  * against without inventing a comparison this project can't back up.

@@ -1,10 +1,10 @@
 /**
- * PancakeSwap V3 (BSC Testnet) client — Factory / SmartRouter / QuoterV2,
+ * PancakeSwap V3 (BSC Testnet) client, Factory / SmartRouter / QuoterV2,
  * WBNB/USDT 0.01% fee-tier pool.
  *
  * Same verified addresses and ABI shapes as the Rebalancer agent's copy
  * (each independently confirmed against BscScan Testnet's own "Exact
- * Match" verified source before use — see that project's pancake.ts for
+ * Match" verified source before use, see that project's pancake.ts for
  * the full verification notes, including the SmartRouter-vs-classic-
  * SwapRouter discovery). Duplicated here for the same deploy-isolation
  * reason as every other agent's local copy of its protocol bindings: this
@@ -12,7 +12,7 @@
  * directory tree.
  *
  * Grid Trading only needs spot swaps (no LP position management), so this
- * is a smaller surface than the Rebalancer's copy — no
+ * is a smaller surface than the Rebalancer's copy, no
  * NonfungiblePositionManager here.
  */
 
@@ -30,9 +30,9 @@ export const PANCAKE_TESTNET = {
   swapRouter: "0x9a489505a00cE272eAa5e07Dba6491314CaE3796" as Address, // PancakeSwap SmartRouter (verified CONTRACT NAME on BscScan Testnet)
   quoterV2: "0xbC203d7f83677c7ed3F7acEc959963E7F4ECC5C2" as Address,
   WBNB: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd" as Address,
-  USDT: "0xA11c8D9DC9b66E209Ef60F0C8D969D3CD988782c" as Address, // Venus-testnet USDT — token0 in the pool below
+  USDT: "0xA11c8D9DC9b66E209Ef60F0C8D969D3CD988782c" as Address, // Venus-testnet USDT, token0 in the pool below
   pool_WBNB_USDT_1bp: "0xCed0844e421F856D2de472F9e7037f873987887C" as Address,
-  FEE_1BP: 100, // 0.01% — the only WBNB/USDT tier with real testnet liquidity
+  FEE_1BP: 100, // 0.01%, the only WBNB/USDT tier with real testnet liquidity
 } as const;
 
 export const poolAbi = parseAbi([
@@ -40,7 +40,7 @@ export const poolAbi = parseAbi([
   "function liquidity() view returns (uint128)",
 ]);
 
-// SmartRouter's exactInputSingle has NO deadline field of its own —
+// SmartRouter's exactInputSingle has NO deadline field of its own,
 // deadline protection comes from wrapping the call in SmartRouter's own
 // multicall(uint256 deadline, bytes[] data) overload instead (verified via
 // BscScan Testnet's own ABI panel for this contract; CONTRACT NAME:
@@ -83,7 +83,7 @@ export interface PoolState {
   rawPrice: number; // token1 (WBNB) raw units per token0 (USDT) raw unit, current spot
 }
 
-/** Always reads live — never caches — so a grid decision is never made on stale price. */
+/** Always reads live, never caches, so a grid decision is never made on stale price. */
 export async function getPoolState(): Promise<PoolState> {
   const c = getPancakePublicClient();
   const slot0 = await c.readContract({
@@ -95,7 +95,7 @@ export async function getPoolState(): Promise<PoolState> {
   return { tick: slot0[1], sqrtPriceX96: slot0[0], rawPrice: sqrtP * sqrtP };
 }
 
-/** Real on-chain simulated quote (QuoterV2) — never an assumed/estimated price. */
+/** Real on-chain simulated quote (QuoterV2), never an assumed/estimated price. */
 export async function quoteExactInputSingle(tokenIn: Address, tokenOut: Address, amountIn: bigint): Promise<bigint> {
   const c = getPancakePublicClient();
   const { result } = await c.simulateContract({

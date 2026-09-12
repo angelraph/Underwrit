@@ -14,7 +14,7 @@ interface CreateSessionBody {
 
 /**
  * Persists the result of a REAL client.grantSession(...) call (run
- * client-side against the user's own Altana wallet — this route never
+ * client-side against the user's own Altana wallet, this route never
  * touches a private key, it only records what already happened on-chain).
  */
 export async function POST(req: Request) {

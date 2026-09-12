@@ -1,13 +1,13 @@
 /**
- * Venus Protocol (Compound v2 fork) client — BSC Testnet Core Pool.
+ * Venus Protocol (Compound v2 fork) client, BSC Testnet Core Pool.
  *
  * Addresses are duplicated here (rather than imported from the Underwrit
  * monorepo's shared packages/chain) on purpose: this agent project is its own
  * standalone pnpm workspace, bundled and deployed in isolation by `bag deploy`
- * — it cannot reach outside its own directory tree. Each address below was
+ * it cannot reach outside its own directory tree. Each address below was
  * independently verified live on testnet.bscscan.com (real Enter
  * Markets/Borrow/RepayBorrow transaction history, correct token-tracker
- * labels) before being hardcoded — see packages/chain/src/addresses.ts in the
+ * labels) before being hardcoded, see packages/chain/src/addresses.ts in the
  * monorepo root for the same values with the verification notes.
  *
  * Only the standard Compound-fork ABI surface is used, not the full Diamond
@@ -37,7 +37,7 @@ export const venusComptrollerAbi = parseAbi([
   "function getAssetsIn(address account) view returns (address[])",
 ]);
 
-/** vBNB (native-asset market) — mint/repay take BNB value directly, no ERC20 approve. */
+/** vBNB (native-asset market), mint/repay take BNB value directly, no ERC20 approve. */
 export const vBnbAbi = parseAbi([
   "function mint() payable",
   "function repayBorrow() payable",
@@ -47,7 +47,7 @@ export const vBnbAbi = parseAbi([
   "function exchangeRateStored() view returns (uint256)",
 ]);
 
-/** vBEP20 markets (e.g. vUSDT) — amounts as uint256, requires underlying ERC20 approval first. */
+/** vBEP20 markets (e.g. vUSDT), amounts as uint256, requires underlying ERC20 approval first. */
 export const vBep20Abi = parseAbi([
   "function mint(uint256 mintAmount) returns (uint256)",
   "function repayBorrow(uint256 repayAmount) returns (uint256)",
@@ -79,7 +79,7 @@ export function getVenusPublicClient(): PublicClient {
 }
 
 export interface AccountLiquidity {
-  /** true when the Comptroller call itself errored (error code != 0) — treat the position as unknown, not healthy. */
+  /** true when the Comptroller call itself errored (error code != 0), treat the position as unknown, not healthy. */
   errored: boolean;
   /** USD, 18-decimal fixed point: spare borrowing capacity. 0 when in shortfall. */
   liquidityUsd: bigint;
@@ -87,7 +87,7 @@ export interface AccountLiquidity {
   shortfallUsd: bigint;
 }
 
-/** Raw Comptroller.getAccountLiquidity — the same "how safe is this account" check Venus's own liquidation bots watch. */
+/** Raw Comptroller.getAccountLiquidity, the same "how safe is this account" check Venus's own liquidation bots watch. */
 export async function getAccountLiquidity(account: Address): Promise<AccountLiquidity> {
   const [error, liquidity, shortfall] = await getVenusPublicClient().readContract({
     address: VENUS_TESTNET.comptroller,

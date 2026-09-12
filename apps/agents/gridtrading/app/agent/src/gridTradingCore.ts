@@ -1,5 +1,5 @@
 /**
- * Grid Trading — holds a target WBNB/USDT allocation on the PancakeSwap V3
+ * Grid Trading, holds a target WBNB/USDT allocation on the PancakeSwap V3
  * 0.01%-fee WBNB/USDT pool (BSC Testnet) that steps up as price falls
  * through a fixed ladder of levels and steps down as price rises through
  * it, executing real spot swaps whenever the current allocation drifts far
@@ -8,25 +8,25 @@
  * Same discipline as the other three reference agents: this is fixed code,
  * never an LLM tool. All signing lives in `signing.ts`.
  *
- * Design — deliberately stateless (no local state file, matching the "the
+ * Design, deliberately stateless (no local state file, matching the "the
  * NFT is the state" pattern from the Rebalancer, adapted here to "the
  * wallet's own token balances are the state"):
  *   - The grid itself is a FIXED ladder of absolute tick levels
  *     (GRID_CENTER_TICK ± k * LEVEL_SPACING_TICKS for k in
- *     [-N_LEVELS, N_LEVELS]) — anchored to real, round tick numbers chosen
+ *     [-N_LEVELS, N_LEVELS]), anchored to real, round tick numbers chosen
  *     from the pool's actual price at build time, not re-derived from
  *     "current tick" on every run (which would make the grid drift with
  *     price instead of trading against it).
  *   - Each level has a target WBNB allocation fraction of total portfolio
- *     value: 100% WBNB at the bottom level (cheapest price — fully bought
- *     in), 0% WBNB at the top level (most expensive — fully sold out), and
+ *     value: 100% WBNB at the bottom level (cheapest price, fully bought
+ *     in), 0% WBNB at the top level (most expensive, fully sold out), and
  *     a straight-line step between, so target allocation only ever needs
- *     the CURRENT tick and the wallet's CURRENT balances to compute — no
+ *     the CURRENT tick and the wallet's CURRENT balances to compute, no
  *     memory of a "last observed level" required.
  *   - Every run: read the current tick, compute the target WBNB value in
- *     USDT-equivalent terms, compare to what's actually held, and — if the
+ *     USDT-equivalent terms, compare to what's actually held, and, if the
  *     gap exceeds half a level's worth (a deadband, so a single price
- *     wiggle within one level doesn't trigger a trade) — swap exactly
+ *     wiggle within one level doesn't trigger a trade), swap exactly
  *     enough to close it. Rising price sells into strength; falling price
  *     buys the dip. Classic grid behavior, derived fresh from chain state
  *     every time.
@@ -46,16 +46,16 @@ import {
   type PoolState,
 } from "./pancake.js";
 
-// Anchored to the pool's real tick at build time (~190104, 2026-08-14) —
+// Anchored to the pool's real tick at build time (~190104, 2026-08-14),
 // a fixed ladder, not re-centered on "current tick" each run (that would
 // make the grid chase price instead of trading against it).
 const GRID_CENTER_TICK = 190000;
 const LEVEL_SPACING_TICKS = 500; // ~5% per level, consistent with the Rebalancer's chosen granularity
-const N_LEVELS = 5; // band = center ± 2500 ticks (~±22%) — wide given this thin pool's observed volatility
+const N_LEVELS = 5; // band = center ± 2500 ticks (~±22%), wide given this thin pool's observed volatility
 
 const RESERVE_BNB = parseEther("0.01"); // always keep this much native for gas
 const SLIPPAGE_BPS = 500n; // 5%
-const MIN_TRADE_USDT_RAW = 500_000n; // ~0.5 USDT — below this, not worth a swap's gas
+const MIN_TRADE_USDT_RAW = 500_000n; // ~0.5 USDT, below this, not worth a swap's gas
 
 function deadline(): bigint {
   return BigInt(Math.floor(Date.now() / 1000) + 600);
@@ -135,7 +135,7 @@ export async function checkAndTrade(): Promise<GridCheckResult> {
   const pool: PoolState = await getPoolState();
   const executor = wallet.makeExecutor({ client });
 
-  // Wrap any idle native BNB above the gas reserve first — this is what
+  // Wrap any idle native BNB above the gas reserve first, this is what
   // funds the very first trade, and also naturally absorbs any later
   // manual top-up without needing separate handling.
   const nativeBalance = await client.getBalance({ address: wallet.address });
@@ -154,7 +154,7 @@ export async function checkAndTrade(): Promise<GridCheckResult> {
   const targetWbnbValueUsdtRaw = totalValueUsdtRaw * target;
   const gapUsdtRaw = targetWbnbValueUsdtRaw - actualWbnbValueUsdtRaw; // >0 => need to buy more WBNB
 
-  // Deadband: half a grid level's worth of the portfolio — a single price
+  // Deadband: half a grid level's worth of the portfolio, a single price
   // wiggle within one level shouldn't trigger a trade.
   const levelStepUsdtRaw = totalValueUsdtRaw / (2 * N_LEVELS);
   const deadbandUsdtRaw = levelStepUsdtRaw * 0.5;
@@ -168,7 +168,7 @@ export async function checkAndTrade(): Promise<GridCheckResult> {
   };
 
   if (wrapTxHashes.length > 0) {
-    // A real wrap happened — report it as this run's real action in its
+    // A real wrap happened, report it as this run's real action in its
     // own right (with its real tx hash) rather than letting it disappear
     // into a "no trade" skip just because the deadband check below might
     // find nothing further to do this run. The buy/sell decision itself
@@ -180,20 +180,20 @@ export async function checkAndTrade(): Promise<GridCheckResult> {
     return {
       ...base,
       actionTaken: false,
-      skippedReason: `level ${level.toFixed(2)} target ${(target * 100).toFixed(0)}% WBNB vs actual ${(actualFraction * 100).toFixed(0)}% — within deadband, no trade`,
+      skippedReason: `level ${level.toFixed(2)} target ${(target * 100).toFixed(0)}% WBNB vs actual ${(actualFraction * 100).toFixed(0)}%, within deadband, no trade`,
     };
   }
 
   if (gapUsdtRaw > 0) {
-    // Need more WBNB — buy with USDT (bounded by what we actually hold).
+    // Need more WBNB, buy with USDT (bounded by what we actually hold).
     const buyAmountUsdtRaw = BigInt(Math.floor(Math.min(gapUsdtRaw, Number(bal.usdt))));
     if (buyAmountUsdtRaw < MIN_TRADE_USDT_RAW) {
-      return { ...base, actionTaken: false, skippedReason: `target wants more WBNB but only ${bal.usdt} raw USDT available — below the minimum trade size` };
+      return { ...base, actionTaken: false, skippedReason: `target wants more WBNB but only ${bal.usdt} raw USDT available, below the minimum trade size` };
     }
     const swapTxHashes = await executeSwap(wallet, executor, PANCAKE_TESTNET.USDT, PANCAKE_TESTNET.WBNB, buyAmountUsdtRaw);
     return { ...base, actionTaken: true, action: { type: "buy_wbnb", txHashes: swapTxHashes } };
   } else {
-    // Too much WBNB for this level — sell some into USDT.
+    // Too much WBNB for this level, sell some into USDT.
     const sellAmountWbnbRaw = BigInt(Math.floor(Math.min(-gapUsdtRaw * pool.rawPrice, Number(bal.wbnb))));
     if (sellAmountWbnbRaw === 0n) {
       return { ...base, actionTaken: false, skippedReason: `target wants less WBNB but none available to sell` };

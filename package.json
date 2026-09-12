@@ -2,7 +2,7 @@
   "name": "underwrit",
   "private": true,
   "version": "0.0.1",
-  "description": "Underwrit — the BNB agent marketplace where agents prove what they can do before anyone hires them.",
+  "description": "Underwrit, the BNB agent marketplace where agents prove what they can do before anyone hires them.",
   "workspaces": [
     "apps/*",
     "packages/*"

@@ -4,7 +4,7 @@
  * Postgres, so Underwrit's UI can show genuine evidence for this agent
  * instead of the MOCK_AGENTS placeholder data.
  *
- * Every tx hash below is real — broadcast and confirmed during this
+ * Every tx hash below is real, broadcast and confirmed during this
  * session's build (seedPosition.ts + monitor.ts runs against the agent's
  * live Venus Protocol testnet position). Re-running this script is
  * idempotent: it skips any tx hash already present in the Action table.
@@ -93,7 +93,7 @@ async function main() {
   for (const a of KNOWN_ACTIONS) {
     const existing = await prisma.action.findFirst({ where: { txHash: a.hash } });
     if (existing) {
-      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…) — already synced`);
+      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…), already synced`);
       continue;
     }
 
@@ -113,7 +113,7 @@ async function main() {
       },
     });
     console.log(
-      `  synced ${a.type} — tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`,
+      `  synced ${a.type}, tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`,
     );
   }
 
@@ -140,7 +140,7 @@ async function main() {
       worstDrawdownPct: null,
       // Venus's own price oracle reported ~$24 of borrowing capacity against
       // the 0.05 BNB collateral supplied (see seedPosition.ts console output,
-      // Comptroller.getAccountLiquidity) — an on-chain-sourced figure, not an
+      // Comptroller.getAccountLiquidity), an on-chain-sourced figure, not an
       // estimate we invented.
       capitalTested: 24,
       daysObserved: snapshot.daysObserved,
@@ -155,7 +155,7 @@ async function main() {
 
   // Counterfactual for the repay: liquidity observed before vs. after the
   // guardian's real repay tx (both figures read live from monitor.ts runs
-  // this session — see project memory for the exact readings).
+  // this session, see project memory for the exact readings).
   const repayAction = await prisma.action.findFirst({
     where: { agentId: agent.id, actionType: "repay" },
   });

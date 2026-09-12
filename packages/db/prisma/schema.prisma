@@ -1,6 +1,6 @@
 // Underwrit data model.
 // Every numeric evidence field here must trace back to a real on-chain tx hash
-// (Action.txHash) or a real 8004scan feedback record — never a fabricated value.
+// (Action.txHash) or a real 8004scan feedback record, never a fabricated value.
 
 generator client {
   provider = "prisma-client-js"
@@ -110,7 +110,7 @@ model Counterfactual {
   baselineOutcome  Float
   actualOutcome    Float
   valueCreated     Float
-  unit             String @default("USD liquidity") // e.g. "USD liquidity", "% APY" — lets the UI label outcomes correctly per category instead of assuming one unit for all
+  unit             String @default("USD liquidity") // e.g. "USD liquidity", "% APY", lets the UI label outcomes correctly per category instead of assuming one unit for all
 }
 
 model JobSpec {

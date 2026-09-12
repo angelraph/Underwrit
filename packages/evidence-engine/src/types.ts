@@ -3,7 +3,7 @@ export interface ActionLike {
   result: "SUCCESS" | "FAIL";
   gasCost: number | null;
   latencyMs: number | null;
-  /** Free-form params — capital amount, if present, should be under `capital`. */
+  /** Free-form params, capital amount, if present, should be under `capital`. */
   paramsJson: Record<string, unknown>;
 }
 

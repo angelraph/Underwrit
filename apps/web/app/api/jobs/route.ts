@@ -11,13 +11,13 @@ interface CreateJobBody {
 }
 
 /**
- * Persists a real JobSpec — the first step of the previously-mocked
+ * Persists a real JobSpec, the first step of the previously-mocked
  * Job Contract -> Job Fit -> Trial -> Hire pipeline becoming real. Ranking
  * itself (rankAgentsForJob) was already real; it just had nothing real to
  * read from. This route is the missing write path.
  *
  * userAddress is required by the schema (a Job Contract belongs to a
- * specific requester) — the client only calls this once a real Altana
+ * specific requester), the client only calls this once a real Altana
  * wallet exists, never with a placeholder.
  */
 export async function POST(req: Request) {

@@ -1,5 +1,5 @@
 /**
- * Rebalancer — manages a single concentrated PancakeSwap V3 WBNB/USDT (0.01%
+ * Rebalancer, manages a single concentrated PancakeSwap V3 WBNB/USDT (0.01%
  * fee tier) liquidity position on BSC Testnet, and resets its range whenever
  * price drifts outside it.
  *
@@ -9,7 +9,7 @@
  * builds the real on-chain calls.
  *
  * Position lifecycle, entirely derived from live chain state each run (no
- * local state file — the NFT the wallet owns *is* the state):
+ * local state file, the NFT the wallet owns *is* the state):
  *   - No position owned  -> wrap idle native BNB into WBNB, then run the
  *     shared `sizeSwapAndMint` sequence to open one.
  *   - Position owned, in range, wallet also holds idle USDT/WBNB dust above
@@ -18,20 +18,20 @@
  *     in via increaseLiquidity, instead of leaving capital sitting idle.
  *   - Position owned, in range, no meaningful dust -> no action.
  *   - Position owned, current tick has drifted outside the range -> remove
- *     it (decreaseLiquidity + collect + burn, batched into one multicall —
+ *     it (decreaseLiquidity + collect + burn, batched into one multicall,
  *     the same atomic pattern PancakeSwap/Uniswap's own front end uses),
  *     then run `sizeSwapAndMint` again to re-open centered on the new tick.
  *
  * Sizing (`sizeSwapAndMint`): a single swap sized from the pre-swap price
- * isn't enough on a thin pool — the swap itself moves the price (verified
+ * isn't enough on a thin pool, the swap itself moves the price (verified
  * the hard way: an initial 50/50-split open left ~99.98% of the USDT side
  * as unused dust, because the range had been fixed against the pre-swap
  * tick and the swap moved price past it before the mint landed). The real
  * fix is two-phase: size and execute an initial swap against the
  * *pre-swap* price, then re-read the pool for real, finalize the mint range
- * against *that* price, and — if the swap's own impact left the resulting
+ * against *that* price, and, if the swap's own impact left the resulting
  * balances more than a couple of percent off the now-final range's actual
- * required ratio — run one bounded corrective swap before minting. Every
+ * required ratio, run one bounded corrective swap before minting. Every
  * mint/swap here still carries real `amountMin`/`amountOutMinimum` floors;
  * this sizing logic only affects capital efficiency (how much ends up
  * working vs. idle), never correctness.
@@ -64,9 +64,9 @@ import {
 const RESERVE_BNB = parseEther("0.02"); // always keep this much for gas
 const MIN_OPEN_BNB = parseEther("0.02"); // don't bother opening a dust position
 const RANGE_HALF_WIDTH_TICKS = 500; // ~5% band around current price (tickSpacing=1 on this pool)
-const SLIPPAGE_BPS = 500n; // 5% — real protection, not faked away just because it's testnet
+const SLIPPAGE_BPS = 500n; // 5%, real protection, not faked away just because it's testnet
 const MAX_UINT128 = (1n << 128n) - 1n; // sentinel for "collect everything owed"
-const DUST_USDT_FLOOR = 10_000n; // ~1 cent (6dp) — below this, not worth a swap+mint's gas
+const DUST_USDT_FLOOR = 10_000n; // ~1 cent (6dp), below this, not worth a swap+mint's gas
 const DUST_WBNB_FLOOR = parseEther("0.001");
 
 function deadline(): bigint {
@@ -83,7 +83,7 @@ async function tokenBalances(client: PublicClient, owner: Address): Promise<{ us
   return { usdt, wbnb };
 }
 
-/** Wrap native BNB into a plain ERC20 WBNB balance — a no-op on pool price (not a swap). */
+/** Wrap native BNB into a plain ERC20 WBNB balance, a no-op on pool price (not a swap). */
 async function wrapNative(executor: Executor, amount: bigint): Promise<string[]> {
   if (amount === 0n) return [];
   const res = await executor.execute({
@@ -97,7 +97,7 @@ async function wrapNative(executor: Executor, amount: bigint): Promise<string[]>
 /**
  * Execute one swap leg of a `computeOptimalSwap` recommendation via
  * SmartRouter, always through a normal ERC20 approve + transferFrom (both
- * legs are plain tokens here — native BNB is wrapped up front by the
+ * legs are plain tokens here, native BNB is wrapped up front by the
  * caller). Deadline protection comes from SmartRouter's own
  * `multicall(uint256 deadline, bytes[] data)` overload (see pancake.ts's
  * header note on why the plain `exactInputSingle` struct has no deadline
@@ -166,12 +166,12 @@ export interface MintOutcome {
 
 /**
  * Shared open/re-open sequence: starting from whatever USDT/WBNB the wallet
- * already holds (ERC20 balances only — wrap native first if needed), size
+ * already holds (ERC20 balances only, wrap native first if needed), size
  * and run a swap against the current price, re-read the pool for the
  * *actual* post-swap price, finalize the mint range against that, and run
  * one bounded corrective swap if the swap's own price impact left the
  * balances meaningfully off-ratio for that final range. Always mints with
- * `amountMin: 0` — this function's job is capital efficiency, never a
+ * `amountMin: 0`, this function's job is capital efficiency, never a
  * safety boundary.
  */
 async function sizeSwapAndMint(wallet: WalletProvider, executor: Executor, client: PublicClient): Promise<MintOutcome> {
@@ -184,7 +184,7 @@ async function sizeSwapAndMint(wallet: WalletProvider, executor: Executor, clien
   const txHashes = await applyOptimalSwap(wallet, executor, initialSwap);
 
   // Re-read for real: the swap we just ran moves price on a thin pool, so
-  // the range we actually mint into — and any corrective swap — must be
+  // the range we actually mint into, and any corrective swap, must be
   // sized against the price as it stands now, not as it stood before we
   // traded.
   const finalPool: PoolState = await getPoolState();
@@ -241,7 +241,7 @@ async function findOwnedPosition(owner: Address): Promise<OwnedPosition | null> 
   const count = await c.readContract({ address: PANCAKE_TESTNET.nfpm, abi: nfpmAbi, functionName: "balanceOf", args: [owner] });
   if (count === 0n) return null;
 
-  // v1 only ever holds one position at a time — take index 0.
+  // v1 only ever holds one position at a time, take index 0.
   const tokenId = await c.readContract({ address: PANCAKE_TESTNET.nfpm, abi: nfpmAbi, functionName: "tokenOfOwnerByIndex", args: [owner, 0n] });
   const pos = await c.readContract({ address: PANCAKE_TESTNET.nfpm, abi: nfpmAbi, functionName: "positions", args: [tokenId] });
   return { tokenId, tickLower: pos[5], tickUpper: pos[6], liquidity: pos[7] };
@@ -279,7 +279,7 @@ export async function checkAndRebalance(): Promise<RebalanceResult> {
         poolTick: pool.tick,
         position: null,
         actionTaken: false,
-        skippedReason: `no position and only ${formatEther(available)} BNB idle above the ${formatEther(RESERVE_BNB)} gas reserve — below the ${formatEther(MIN_OPEN_BNB)} minimum to open one`,
+        skippedReason: `no position and only ${formatEther(available)} BNB idle above the ${formatEther(RESERVE_BNB)} gas reserve, below the ${formatEther(MIN_OPEN_BNB)} minimum to open one`,
       };
     }
 
@@ -301,7 +301,7 @@ export async function checkAndRebalance(): Promise<RebalanceResult> {
   const inRange = pool.tick >= owned.tickLower && pool.tick < owned.tickUpper;
 
   if (inRange) {
-    // In range — but is there idle USDT/WBNB dust worth folding back in
+    // In range, but is there idle USDT/WBNB dust worth folding back in
     // (e.g. left over from a less-precisely-sized earlier mint)? A real
     // rebalancer shouldn't leave capital sitting idle just because the
     // position itself doesn't need touching.
@@ -366,7 +366,7 @@ export async function checkAndRebalance(): Promise<RebalanceResult> {
 
   const removeRes = await executor.execute({
     call: { address: PANCAKE_TESTNET.nfpm, abi: nfpmAbi, functionName: "multicall", args: [removeCalldata] },
-    description: `Position #${owned.tokenId} drifted out of range (tick ${pool.tick} outside [${owned.tickLower}, ${owned.tickUpper})) — decreaseLiquidity+collect+burn in one tx`,
+    description: `Position #${owned.tokenId} drifted out of range (tick ${pool.tick} outside [${owned.tickLower}, ${owned.tickUpper})), decreaseLiquidity+collect+burn in one tx`,
   });
 
   const outcome = await sizeSwapAndMint(wallet, executor, client);

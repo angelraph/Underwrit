@@ -1,8 +1,8 @@
 /**
- * Yield Router — the agent's actual value: compare real Venus Protocol
+ * Yield Router, the agent's actual value: compare real Venus Protocol
  * supply APY across markets and route idle capital to whichever is
  * genuinely best, using only rates read live from the chain (a per-block
- * rate mantissa + an actually-measured block time — never a hardcoded
+ * rate mantissa + an actually-measured block time, never a hardcoded
  * annualization constant).
  *
  * Same discipline as the Health Factor Guardian's healthFactorGuard.ts: this
@@ -11,7 +11,7 @@
  *
  * v1 scope: compares vBNB vs vUSDT supply APY and can act on vBNB (native,
  * no swap needed). When vUSDT is genuinely better, it reports that honestly
- * instead of pretending to act — this agent has no BNB->USDT swap path
+ * instead of pretending to act, this agent has no BNB->USDT swap path
  * wired yet (a real PancakeSwap V3 SmartRouter integration, deferred rather
  * than rushed). Lista liquid staking is out of scope entirely for now: it
  * has no BSC Testnet deployment (verified during research), so there is
@@ -75,7 +75,7 @@ export async function checkAndOptimize(): Promise<YieldCheckResult> {
   if (best.market !== "vBNB") {
     return {
       ...base,
-      skippedReason: `${best.market} currently offers the best real supply APY (${best.apyPct.toFixed(2)}%), but this agent has no BNB→USDT swap path wired yet — holding rather than faking a cross-asset move`,
+      skippedReason: `${best.market} currently offers the best real supply APY (${best.apyPct.toFixed(2)}%), but this agent has no BNB→USDT swap path wired yet, holding rather than faking a cross-asset move`,
     };
   }
 

@@ -13,13 +13,13 @@ interface StoredWallet {
 
 /**
  * Client-side Altana wallet state. A wallet here is a real BSC Testnet
- * smart account (EIP-7702, Porto-based) controlled by a browser passkey —
+ * smart account (EIP-7702, Porto-based) controlled by a browser passkey,
  * not a mock. `PasskeyCredential` is JSON-safe by design (see
  * @altananetwork/sdk's own docs on the type), so persisting it in
  * localStorage and rehydrating via `signerFromPasskey` is the SDK's own
  * intended pattern, not a workaround.
  *
- * The private key never leaves the device's secure enclave — only the
+ * The private key never leaves the device's secure enclave, only the
  * credential ID + public key are stored here, and every signature still
  * requires a fresh biometric/WebAuthn prompt.
  */
@@ -37,7 +37,7 @@ export function useAltanaWallet() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setWallet(JSON.parse(raw) as StoredWallet);
     } catch {
-      // corrupted/unavailable storage — treat as no wallet rather than crash
+      // corrupted/unavailable storage, treat as no wallet rather than crash
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export function useAltanaWallet() {
 
   // createPasskeyWallet always registers a brand-new WebAuthn credential,
   // which always means a brand-new smart-account address, so it must never
-  // be a silent fallback for a failed/ambiguous recovery attempt — that
+  // be a silent fallback for a failed/ambiguous recovery attempt, that
   // just breeds more orphaned wallets. recover() and create() are kept as
   // two separate, explicit actions instead of one that guesses.
   const recover = useCallback(async (): Promise<StoredWallet> => {
@@ -73,7 +73,7 @@ export function useAltanaWallet() {
     try {
       const client = getAltanaClient();
       // A timestamped name so a future OS passkey picker can actually tell
-      // this credential apart from any other "Underwrit" one already saved —
+      // this credential apart from any other "Underwrit" one already saved,
       // every wallet before this fix used the exact same generic label, with
       // no way to distinguish them once localStorage lost track of one.
       const name = `Underwrit ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;

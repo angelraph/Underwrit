@@ -86,7 +86,7 @@ export function HireButton({
         chainId: BNB_TESTNET.chainId,
       });
 
-      // permissions.spend[].limit is a bigint — JSON.stringify can't
+      // permissions.spend[].limit is a bigint, JSON.stringify can't
       // serialize that directly, so store the DB-facing copy with it
       // stringified (the real on-chain call above already used the bigint).
       const permissionsForDb = {

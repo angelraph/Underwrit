@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Pull the Yield Router's real on-chain actions (BSC Testnet) into Postgres.
- * Same pattern as syncHealthFactorGuardian.ts — every tx hash below is real,
+ * Same pattern as syncHealthFactorGuardian.ts, every tx hash below is real,
  * broadcast and confirmed this session by yieldRouterCore.ts's real
  * Venus-supply-APY comparison and routing decision.
  */
@@ -65,7 +65,7 @@ async function main() {
   for (const a of KNOWN_ACTIONS) {
     const existing = await prisma.action.findFirst({ where: { txHash: a.hash } });
     if (existing) {
-      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…) — already synced`);
+      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…), already synced`);
       continue;
     }
 
@@ -85,7 +85,7 @@ async function main() {
       },
     });
     console.log(
-      `  synced ${a.type} — tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`,
+      `  synced ${a.type}, tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`,
     );
   }
 
@@ -109,7 +109,7 @@ async function main() {
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
       // Real supply APY read live from Venus at decision time (see venus.ts
-      // getSupplyApyPct — annualized from an actually-measured block time).
+      // getSupplyApyPct, annualized from an actually-measured block time).
       netYieldPct: 42.24,
       worstDrawdownPct: null,
       capitalTested: 0.15,
@@ -123,7 +123,7 @@ async function main() {
     `\nEvidence snapshot: confidence=${snapshot.confidenceScore} successRate=${(snapshot.successRate * 100).toFixed(0)}% actions=${snapshot.actionsExecuted}`,
   );
 
-  // Counterfactual: idle capital earns 0% by definition — a real, honest
+  // Counterfactual: idle capital earns 0% by definition, a real, honest
   // baseline that needs no invented comparison data (see CATEGORY_BASELINES.YIELD's
   // own note on why the original "highest-TVL pool" baseline wasn't
   // something this project could compute). Actual = the real supply APY

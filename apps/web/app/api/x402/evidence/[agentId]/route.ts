@@ -5,7 +5,7 @@ import { prisma } from "@underwrit/db";
 import { BNB_TESTNET } from "../../../../lib/altana";
 
 /**
- * Sells real evidence history over x402/B402 — the Altana "Best Built with
+ * Sells real evidence history over x402/B402, the Altana "Best Built with
  * Altana" bonus track's sell-side requirement. The payload is genuinely
  * useful, not a stub: another agent doing due diligence on one of
  * Underwrit's reference agents can buy the full EvidenceSnapshot timeline
@@ -13,7 +13,7 @@ import { BNB_TESTNET } from "../../../../lib/altana";
  * the same data the free UI only shows the latest snapshot of.
  *
  * The facilitator is a dedicated fresh EOA that only ever broadcasts
- * settlement transactions (its own gas) — it never custodies buyer funds,
+ * settlement transactions (its own gas), it never custodies buyer funds,
  * those settle straight to X402_PAYOUT_ADDRESS. See
  * docs/x402-facilitator-funding.md for what it still needs to go live.
  */

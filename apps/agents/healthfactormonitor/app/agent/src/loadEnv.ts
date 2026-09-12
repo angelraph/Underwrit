@@ -5,7 +5,7 @@
  * so scripts meant to be run directly must import this FIRST, before any
  * code (e.g. `getWallet()`) that reads WALLET_PASSWORD from the environment.
  *
- * No-op (never throws) when the file is absent — a deployed runtime injects
+ * No-op (never throws) when the file is absent, a deployed runtime injects
  * secrets directly via Secrets Manager (see main.ts `loadRuntimeSecrets`)
  * and has no `.studio/.env.local` on disk at all.
  */
@@ -21,6 +21,6 @@ const envPath = path.resolve(
 try {
   process.loadEnvFile(envPath);
 } catch {
-  // absent/unreadable — fine for a deployed runtime or a shell that already
+  // absent/unreadable, fine for a deployed runtime or a shell that already
   // exported WALLET_PASSWORD itself.
 }

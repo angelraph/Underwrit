@@ -3,7 +3,7 @@ import { hireErc8183Agent, type HireAgentResult, type Signer } from "@altananetw
 import { BNB_TESTNET } from "./altana";
 
 /**
- * ERC-8183 buyer-side hiring (Altana bonus track) — funds a real job-escrow
+ * ERC-8183 buyer-side hiring (Altana bonus track), funds a real job-escrow
  * against a provider's wallet in $U, via the AgenticCommerce kernel on BSC
  * Testnet. One atomic relay intent (createJob, registerJob, setBudget,
  * approve $U, fund).

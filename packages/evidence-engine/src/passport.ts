@@ -3,12 +3,12 @@ import type { ActionLike, EvidenceSnapshotFields } from "./types";
 /**
  * Turns a raw Action log into the numbers shown on an Agent Performance
  * Passport. Every input here must come from real Action rows (real tx
- * hashes) — this function only aggregates, it never invents data.
+ * hashes), this function only aggregates, it never invents data.
  *
  * Confidence score combines three things, each capped so no single one can
  * dominate: how often the agent succeeds, how large the sample is (a 3-action
  * track record should not out-rank a 150-action one), and how long it's been
- * observed. Mainnet evidence carries more weight than testnet — same agent,
+ * observed. Mainnet evidence carries more weight than testnet, same agent,
  * same actions, but real capital at stake is stronger proof (this is also
  * what the Altana track explicitly rewards).
  */

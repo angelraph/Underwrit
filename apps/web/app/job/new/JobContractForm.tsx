@@ -23,7 +23,7 @@ export function JobContractForm({
     defaultCategory ?? guessCategoryFromObjective(objective) ?? categories[0]
   );
   // Once the user has picked a category themselves, typing more into the
-  // objective box should never silently override their choice — the guess
+  // objective box should never silently override their choice, the guess
   // is only ever a starting point, not a running auto-correct.
   const [categoryTouched, setCategoryTouched] = useState(Boolean(defaultCategory));
   const [submitting, setSubmitting] = useState(false);

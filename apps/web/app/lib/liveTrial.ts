@@ -11,12 +11,12 @@ import {
 import { formatEther, parseEther, type Address } from "viem";
 
 /**
- * Live, gas-free dry runs of each reference agent's real decision logic —
+ * Live, gas-free dry runs of each reference agent's real decision logic,
  * not a replay of historical stats. Every read here uses the exact same
  * verified contracts/addresses the deployed agent itself signs against
- * (see each agent's own source under apps/agents for the original — this
+ * (see each agent's own source under apps/agents for the original, this
  * is the same logic re-run read-only against the agent's
- * real wallet). Nothing here ever signs or spends — it's the honest
+ * real wallet). Nothing here ever signs or spends, it's the honest
  * "what would this agent do if you hired it this second" answer, computed
  * fresh every time the page loads, never cached, never faked.
  */
@@ -157,7 +157,7 @@ export async function runRebalancerTrial(agentWallet: Address): Promise<Rebalanc
   });
 
   const pool = await client.readContract({
-    address: PANCAKESWAP_V3_TESTNET.wbnbUsdtPool001Pct, // WBNB/USDT 0.01% — the only tier with real testnet liquidity
+    address: PANCAKESWAP_V3_TESTNET.wbnbUsdtPool001Pct, // WBNB/USDT 0.01%, the only tier with real testnet liquidity
     abi: pancakeV3PoolAbi,
     functionName: "slot0",
   });
@@ -235,7 +235,7 @@ export async function runGridTrial(): Promise<GridTrial> {
     poolTick: tick,
     level,
     targetWbnbFraction: target,
-    wouldAct: true, // exact action depends on current holdings vs. target — see the agent's own real evidence for its actual last trade
+    wouldAct: true, // exact action depends on current holdings vs. target, see the agent's own real evidence for its actual last trade
     reasoning: `At level ${level.toFixed(2)}, target allocation is ${(target * 100).toFixed(0)}% WBNB. The agent buys more as price falls through levels, sells into strength as it rises.`,
   };
 }

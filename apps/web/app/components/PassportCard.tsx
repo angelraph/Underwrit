@@ -3,7 +3,7 @@ import type { MockAgent } from "../lib/mockData";
 import { RiskBadge } from "./RiskBadge";
 
 /**
- * The Agent Performance Passport — evidence, not a profile. Every stat here
+ * The Agent Performance Passport, evidence, not a profile. Every stat here
  * is meant to trace back to a real Action row once wired to @underwrit/db;
  * this component only formats, it never invents numbers.
  */

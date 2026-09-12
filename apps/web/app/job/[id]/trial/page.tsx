@@ -66,7 +66,7 @@ async function getLiveTrial(category: string, walletAddress: string | null) {
         return null;
     }
   } catch {
-    return null; // RPC hiccup — fall back to historical-only view rather than crash the page
+    return null; // RPC hiccup, fall back to historical-only view rather than crash the page
   }
 }
 

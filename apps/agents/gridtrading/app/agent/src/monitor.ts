@@ -1,5 +1,5 @@
 /**
- * Standalone grid-trading runner — same pattern as the other three
+ * Standalone grid-trading runner, same pattern as the other three
  * reference agents' monitor.ts. Separate from main.ts's A2A/ERC-8183 seller
  * server: this IS the reference agent Underwrit scores, independent of
  * whether anyone hires it as a paid seller.
@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(result, null, 2));
 
   if (result.actionTaken) {
-    console.log(`[gridtrading] ACTED — ${result.action?.type}, tx(s) ${result.action?.txHashes.join(", ")}`);
+    console.log(`[gridtrading] ACTED, ${result.action?.type}, tx(s) ${result.action?.txHashes.join(", ")}`);
   } else {
     console.log(`[gridtrading] no action: ${result.skippedReason ?? "within deadband"}`);
   }

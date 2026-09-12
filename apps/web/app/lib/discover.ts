@@ -2,15 +2,15 @@ import { scan8004, withCache, type Scan8004Agent } from "@underwrit/chain";
 
 /**
  * Real BSC-mainnet ERC-8004 agents, pulled live from 8004scan's public API
- * — the actual "200,000 agents, no way to find them" population the
+ * the actual "200,000 agents, no way to find them" population the
  * hackathon brief is about, distinct from Underwrit's own 4 reference
  * agents. Their scores/feedback counts are 8004scan's own reputation data,
- * not evidence Underwrit independently verified — the UI must always label
+ * not evidence Underwrit independently verified, the UI must always label
  * these as third-party, never blend them into the real-Action-log evidence
  * shown for OURS agents.
  *
  * Cached in-memory at module scope (created once per server process, not
- * per request — `withCache` closes over its own Map, so building the
+ * per request, `withCache` closes over its own Map, so building the
  * wrapper inside a request handler would silently defeat it). The free-tier
  * key here is rate-limited to 30 req/min / 1000 req/day; a 10-minute TTL
  * keeps a live demo session nowhere near either limit without needing a

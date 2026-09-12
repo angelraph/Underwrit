@@ -3,7 +3,7 @@
  *
  * VERIFIED = independently confirmed live on a block explorer during research.
  * UNVERIFIED = surfaced via a summarizing fetch tool and NOT yet independently
- * cross-checked — re-verify against BscScan/Etherscan/Basescan directly before
+ * cross-checked, re-verify against BscScan/Etherscan/Basescan directly before
  * this address ever signs a real transaction (see plan Verification section).
  */
 
@@ -29,7 +29,7 @@ export const ALTANA_KEYSTORE_ADDRESSES = {
 } as const;
 
 /**
- * PancakeSwap V3, BSC Testnet — every address here independently confirmed
+ * PancakeSwap V3, BSC Testnet, every address here independently confirmed
  * live during the Rebalancer/Grid Trading agents' build (BscScan Testnet's
  * own verified "Contract ABI" panel, cross-checked by calling
  * WETH9()/factory() on-chain and diffing against the known-good WBNB/Factory
@@ -39,7 +39,7 @@ export const ALTANA_KEYSTORE_ADDRESSES = {
  *
  * This replaces an earlier `PANCAKESWAP_V3_MAINNET` block that was marked
  * UNVERIFIED ("sourced via reader-proxy fetch") and, on cross-check against
- * the addresses actually verified above, turned out to have wrong labels —
+ * the addresses actually verified above, turned out to have wrong labels,
  * its "tickLens" entry was in fact the real testnet SmartRouter address.
  * No independently-verified PancakeSwap V3 MAINNET address set exists in
  * this codebase yet; add one the same way (on-chain cross-check, not a
@@ -53,12 +53,12 @@ export const PANCAKESWAP_V3_TESTNET = {
   WBNB: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd", // VERIFIED on-chain: name="Wrapped BNB", symbol="WBNB", decimals=18
   // The 0.01% fee tier is the only one of the four standard tiers with real
   // liquidity on this WBNB/USDT pair (checked via Factory.getPool across all
-  // four during the Rebalancer/Grid Trading builds) — the Rebalancer and
+  // four during the Rebalancer/Grid Trading builds), the Rebalancer and
   // Grid Trading agents both operate exclusively on this pool.
   wbnbUsdtPool001Pct: "0xCed0844e421F856D2de472F9e7037f873987887C",
 } as const;
 
-/** Venus-testnet USDT — the token PancakeSwap's own WBNB/USDT pools on BSC Testnet are paired against. */
+/** Venus-testnet USDT, the token PancakeSwap's own WBNB/USDT pools on BSC Testnet are paired against. */
 export const VENUS_USDT_TESTNET = "0xA11c8D9DC9b66E209Ef60F0C8D969D3CD988782c" as const;
 
 export const BSC_TESTNET_FAUCET_URL = "https://www.bnbchain.org/en/testnet-faucet";
@@ -67,7 +67,7 @@ export const SCAN8004_API_BASE = "https://8004scan.io/api/v1/public";
 /**
  * Venus Protocol Core Pool, BSC Testnet. Each address independently verified
  * live on testnet.bscscan.com during research (real transaction history,
- * correct token-tracker labels) — not taken on faith from a single source.
+ * correct token-tracker labels), not taken on faith from a single source.
  */
 export const VENUS_TESTNET = {
   comptroller: "0x94d1820b2D1c7c7452A163983Dc888CEC546b77D", // VERIFIED: active Comptroller (Enter Markets / Set Collateral Factor calls)

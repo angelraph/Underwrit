@@ -3,17 +3,17 @@
 #
 # Why this exists: without it, the marketplace's evidence trail freezes at
 # whatever it showed on whatever day someone last ran the agents by hand.
-# Judging runs Sep 9-23, weeks after this was built — a scheduled task is
+# Judging runs Sep 9-23, weeks after this was built, a scheduled task is
 # real, durable infrastructure (survives this Claude session ending, this
 # terminal closing, the computer rebooting) so evidence keeps growing for
 # real through the whole judging window instead.
 #
 # Real dependency, stated plainly: this only fires while the machine is on
-# and the "Admin" user is logged in (LogonType Interactive — no Windows
+# and the "Admin" user is logged in (LogonType Interactive, no Windows
 # password is stored anywhere to run it unattended while logged out, which
 # would need a much bigger credential-handling ask). If the machine is off
 # or logged out for a stretch, evidence generation simply pauses for that
-# stretch — StartWhenAvailable means it catches up on the next run rather
+# stretch, StartWhenAvailable means it catches up on the next run rather
 # than silently drifting further behind, and nothing here ever fakes a
 # timestamp to paper over a gap.
 #

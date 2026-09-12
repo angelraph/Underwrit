@@ -4,7 +4,7 @@ import { SCAN8004_API_BASE } from "./addresses";
  * 8004scan public REST API client.
  *
  * Rate limits (documented): anonymous 10 req/min / 100 req/day, free key
- * 30/1000, Pro 500/100000. Pro-tier keys are manual "contact us" — assume
+ * 30/1000, Pro 500/100000. Pro-tier keys are manual "contact us", assume
  * anonymous tier unless SCAN8004_API_KEY is set. Callers MUST cache results
  * (see withCache below / packages/db) so the live demo never eats the daily
  * cap mid-presentation.
@@ -24,7 +24,7 @@ export interface Scan8004Envelope<T> {
 
 /**
  * Field names verified against a real live response from
- * https://8004scan.io/api/v1/public/agents (not assumed/speculative — the
+ * https://8004scan.io/api/v1/public/agents (not assumed/speculative, the
  * original version of this interface used camelCase names like `chainId`/
  * `ownerAddress` that don't exist on the real payload at all, which meant
  * any code reading `agent.chainId` would silently get `undefined` despite
@@ -114,7 +114,7 @@ export const scan8004 = {
 };
 
 /**
- * Thin memoizing wrapper — swap the get/set for packages/db-backed storage
+ * Thin memoizing wrapper, swap the get/set for packages/db-backed storage
  * (e.g. a ScanCache table keyed by URL + TTL) before the live demo so we
  * never make a live 8004scan call in front of judges.
  */

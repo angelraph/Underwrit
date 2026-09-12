@@ -4,7 +4,7 @@ import { parseAbi } from "viem";
  * Minimal ABIs covering the functions Underwrit actually calls, per the
  * ERC-8004 EIP text + reference contracts (erc-8004/erc-8004-contracts).
  * Trimmed to what we need for discovery/evidence reads and our own agents'
- * writes — not a full mirror of the spec.
+ * writes, not a full mirror of the spec.
  */
 
 export const identityRegistryAbi = parseAbi([

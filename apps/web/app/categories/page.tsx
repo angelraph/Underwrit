@@ -7,7 +7,7 @@ import {
 import { getAllAgents } from "../lib/agents";
 import { PassportCard } from "../components/PassportCard";
 
-// Reads live from Postgres on every request — without this, Next statically
+// Reads live from Postgres on every request, without this, Next statically
 // prerenders the page at build time and bakes in whatever the DB returned
 // then, which goes stale the moment a new Action/EvidenceSnapshot lands.
 export const dynamic = "force-dynamic";

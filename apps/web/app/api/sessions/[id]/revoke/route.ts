@@ -7,7 +7,7 @@ interface RevokeBody {
 
 /**
  * Records a REAL client.revokeSession(...) result (run client-side against
- * the user's own wallet, same as granting — this route only persists what
+ * the user's own wallet, same as granting, this route only persists what
  * already happened on-chain).
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     body = (await req.json()) as RevokeBody;
   } catch {
-    // empty body is fine — revokeTxHash is optional
+    // empty body is fine, revokeTxHash is optional
   }
 
   const existing = await prisma.session.findUnique({ where: { id } });

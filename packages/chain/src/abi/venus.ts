@@ -1,7 +1,7 @@
 import { parseAbi } from "viem";
 
 /**
- * Venus Protocol (Compound v2 fork) — minimal ABIs covering what Underwrit's
+ * Venus Protocol (Compound v2 fork), minimal ABIs covering what Underwrit's
  * Health Factor Guardian actually calls. Trimmed to the standard Compound-fork
  * surface (identical across every fork, including Venus) rather than the full
  * Diamond-proxy facet set.
@@ -14,7 +14,7 @@ export const venusComptrollerAbi = parseAbi([
   "function getAssetsIn(address account) view returns (address[])",
 ]);
 
-/** vBNB (native-asset market) — mint/repay take BNB value directly, no ERC20 approve. */
+/** vBNB (native-asset market), mint/repay take BNB value directly, no ERC20 approve. */
 export const vBnbAbi = parseAbi([
   "function mint() payable",
   "function repayBorrow() payable",
@@ -25,7 +25,7 @@ export const vBnbAbi = parseAbi([
   "function supplyRatePerBlock() view returns (uint256)",
 ]);
 
-/** vBEP20 markets (e.g. vUSDT) — amounts as uint256, requires underlying ERC20 approval first. */
+/** vBEP20 markets (e.g. vUSDT), amounts as uint256, requires underlying ERC20 approval first. */
 export const vBep20Abi = parseAbi([
   "function mint(uint256 mintAmount) returns (uint256)",
   "function repayBorrow(uint256 repayAmount) returns (uint256)",

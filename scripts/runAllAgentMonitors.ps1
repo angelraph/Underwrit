@@ -1,15 +1,15 @@
 # Runs every deployed reference agent's real monitor.ts, then re-syncs its
-# real evidence into Postgres — the whole point being that the marketplace's
+# real evidence into Postgres, the whole point being that the marketplace's
 # evidence trail keeps growing for real through the Sep 9-23 judging window
 # instead of freezing at whatever it showed on the day this was built.
 #
-# Registered as a real Windows Scheduled Task (see setupScheduledTask.ps1) —
+# Registered as a real Windows Scheduled Task (see setupScheduledTask.ps1),
 # this only fires while the machine is on; if it's asleep/off, evidence
 # generation simply pauses for that stretch, which is honest (nothing here
 # fakes a timestamp), not silently broken.
 #
 # Each agent's monitor.ts is independent and already idempotent/self-
-# contained (loads its own .studio/.env.local, uses its own real wallet) —
+# contained (loads its own .studio/.env.local, uses its own real wallet),
 # one agent failing (e.g. insufficient gas, a transient RPC error) must not
 # block the others, so every step is wrapped and logged rather than let a
 # single failure abort the whole run.

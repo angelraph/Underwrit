@@ -1,8 +1,8 @@
 /**
- * Venus Protocol (Compound v2 fork) client — BSC Testnet Core Pool.
+ * Venus Protocol (Compound v2 fork) client, BSC Testnet Core Pool.
  *
  * Same verified addresses as the Health Factor Guardian's copy (each
- * independently confirmed live on testnet.bscscan.com — see that project's
+ * independently confirmed live on testnet.bscscan.com, see that project's
  * venus.ts for the verification notes). Duplicated here for the same reason:
  * this agent is its own standalone deploy unit and cannot reach outside its
  * own directory tree.
@@ -23,7 +23,7 @@ export const VENUS_TESTNET = {
   vUSDT: "0xb7526572FFE56AB9D7489838Bf2E18e3323b441A" as Address,
 } as const;
 
-/** vBNB (native-asset market) — mint/redeem take BNB value directly, no ERC20 approve. */
+/** vBNB (native-asset market), mint/redeem take BNB value directly, no ERC20 approve. */
 export const vBnbAbi = parseAbi([
   "function mint() payable",
   "function redeem(uint256 redeemTokens) returns (uint256)",
@@ -33,7 +33,7 @@ export const vBnbAbi = parseAbi([
   "function supplyRatePerBlock() view returns (uint256)",
 ]);
 
-/** vBEP20 markets (e.g. vUSDT) — amounts as uint256, requires underlying ERC20 approval to mint. */
+/** vBEP20 markets (e.g. vUSDT), amounts as uint256, requires underlying ERC20 approval to mint. */
 export const vBep20Abi = parseAbi([
   "function mint(uint256 mintAmount) returns (uint256)",
   "function redeem(uint256 redeemTokens) returns (uint256)",
@@ -65,7 +65,7 @@ export function getVenusPublicClient(): PublicClient {
 
 /**
  * Measure the network's actual current block time from two real, recent
- * blocks rather than trusting a hardcoded "blocks per year" constant — BSC's
+ * blocks rather than trusting a hardcoded "blocks per year" constant, BSC's
  * block time has changed across upgrades, and a stale constant would quietly
  * mis-annualize every rate computed from it.
  */

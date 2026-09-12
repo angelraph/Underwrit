@@ -13,7 +13,7 @@ function short(address: string): string {
 }
 
 /**
- * Persistent header control for the user's Altana wallet — a real BSC
+ * Persistent header control for the user's Altana wallet, a real BSC
  * Testnet smart account created via a browser passkey (WebAuthn), not a
  * mock connect-wallet button. This is what the Job Contract form and the
  * Hire flow both read `address` from.
@@ -30,7 +30,7 @@ export function WalletButton() {
     if (!address) return;
     const signer = getSigner();
     if (!signer) {
-      setFundResult("Wallet signer unavailable — try reconnecting.");
+      setFundResult("Wallet signer unavailable, try reconnecting.");
       return;
     }
     setFunding(true);
@@ -43,10 +43,10 @@ export function WalletButton() {
         parseEther("0.01")
       );
       setFundResult(
-        result.transactionHash ? `Sent — tx ${result.transactionHash.slice(0, 10)}…` : "Sent."
+        result.transactionHash ? `Sent, tx ${result.transactionHash.slice(0, 10)}…` : "Sent."
       );
     } catch (e) {
-      setFundResult(e instanceof Error ? e.message : "Send failed — try again.");
+      setFundResult(e instanceof Error ? e.message : "Send failed, try again.");
     } finally {
       setFunding(false);
     }
@@ -56,7 +56,7 @@ export function WalletButton() {
     if (!address) return;
     const signer = getSigner();
     if (!signer) {
-      setClaimResult("Wallet signer unavailable — try reconnecting.");
+      setClaimResult("Wallet signer unavailable, try reconnecting.");
       return;
     }
     setClaiming(true);
@@ -64,10 +64,10 @@ export function WalletButton() {
     try {
       const result = await claimTestnetU(address as Address, signer);
       setClaimResult(
-        result.transactionHash ? `Claimed — tx ${result.transactionHash.slice(0, 10)}…` : "Claimed."
+        result.transactionHash ? `Claimed, tx ${result.transactionHash.slice(0, 10)}…` : "Claimed."
       );
     } catch (e) {
-      setClaimResult(e instanceof Error ? e.message : "Claim failed — try again in 30 min.");
+      setClaimResult(e instanceof Error ? e.message : "Claim failed, try again in 30 min.");
     } finally {
       setClaiming(false);
     }
@@ -82,7 +82,7 @@ export function WalletButton() {
           onClick={() => recover().catch(() => {})}
           disabled={creating}
           className="rounded-md border border-border px-3 py-1.5 text-sm hover:border-accent/50 transition-colors disabled:opacity-60"
-          title={error ?? "Reconnect an existing passkey wallet — pick the one you've used with Underwrit before."}
+          title={error ?? "Reconnect an existing passkey wallet, pick the one you've used with Underwrit before."}
         >
           {creating ? "Connecting…" : "Connect Wallet"}
         </button>
@@ -90,7 +90,7 @@ export function WalletButton() {
           onClick={() => create().catch(() => {})}
           disabled={creating}
           className="text-xs text-muted hover:text-accent transition-colors disabled:opacity-60"
-          title="Only for a genuinely first-time wallet — this always makes a new one, no seed phrase, no extension."
+          title="Only for a genuinely first-time wallet, this always makes a new one, no seed phrase, no extension."
         >
           New here?
         </button>

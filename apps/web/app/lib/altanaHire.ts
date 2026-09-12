@@ -3,9 +3,9 @@
  *
  * The per-agent "$X/day" figure shown elsewhere (Performance Passport,
  * category cards) is an informational proposed-cap comparison across
- * agents, not a live on-chain value — there's no honest USD/tBNB exchange
+ * agents, not a live on-chain value, there's no honest USD/tBNB exchange
  * rate to invent for testnet money. The REAL cap actually enforced by the
- * granted Altana session is this fixed, small testnet BNB amount instead —
+ * granted Altana session is this fixed, small testnet BNB amount instead,
  * real, checkable on Altana's explorer, and sized consistently with every
  * other real testnet transaction in this project (a few hundredths of a
  * BNB, matching the reference agents' own funding amounts).

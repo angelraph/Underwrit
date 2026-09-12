@@ -1,14 +1,14 @@
 import { prisma } from "@underwrit/db";
 
 /**
- * Agent Advantage Report data — the TermiX track's core question: does
+ * Agent Advantage Report data, the TermiX track's core question: does
  * hiring an agent beat doing the task yourself, and can you prove it?
  *
- * The "agent" side of every comparison here is pulled live from Postgres —
+ * The "agent" side of every comparison here is pulled live from Postgres,
  * real tx hashes, real gas costs (from actual receipts), real timestamps.
  * It is never hand-written or estimated.
  *
- * The "manual" side cannot honestly be sourced the same way — there is no
+ * The "manual" side cannot honestly be sourced the same way, there is no
  * literal control-group human who tried the identical task at the identical
  * moment to time against. It is a reasoned estimate with its methodology
  * shown inline on the report page, clearly labeled as such rather than

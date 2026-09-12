@@ -2,15 +2,15 @@
 /**
  * Pull the Rebalancer's real on-chain actions (BSC Testnet, PancakeSwap V3
  * WBNB/USDT 0.01% pool) into Postgres. Same pattern as
- * syncHealthFactorGuardian.ts / syncYieldRouter.ts — every tx hash below is
+ * syncHealthFactorGuardian.ts / syncYieldRouter.ts, every tx hash below is
  * real, broadcast and confirmed this session, and every gas cost / block
  * timestamp is read live from the chain, never estimated.
  *
  * This history is genuinely eventful, not staged: the agent opened its
  * first position with a naive 50/50 swap split, the swap's own price impact
  * on this thin pool left the mint centered on a stale pre-swap tick (real
- * on-chain evidence of that: 397679568 raw USDT — ~99.98% of the swapped
- * side — sat unused as dust), the sizing logic was then fixed (two-phase:
+ * on-chain evidence of that: 397679568 raw USDT, ~99.98% of the swapped
+ * side, sat unused as dust), the sizing logic was then fixed (two-phase:
  * size against pre-swap price, re-read the pool for the actual post-swap
  * price, finalize the mint range and run one bounded corrective swap
  * against THAT), and on the very next run the position had already drifted
@@ -33,12 +33,12 @@ const KNOWN_ACTIONS = [
   {
     hash: "0x7566d2ff16e78a27725f82897a1a531e8d75700a8352ef85ff60e1b9b31c270c",
     type: "swap_bnb_to_usdt",
-    params: { protocol: "pancakeswap-v3", pool: "WBNB/USDT 0.01%", amountIn: "0.065 BNB", note: "initial open — naive 50/50 split" },
+    params: { protocol: "pancakeswap-v3", pool: "WBNB/USDT 0.01%", amountIn: "0.065 BNB", note: "initial open, naive 50/50 split" },
   },
   {
     hash: "0xc9a5a0dc6949d6bfca8e5dd581875939d89f0f258df3bb222351addf12bb85d0",
     type: "mint_position",
-    params: { protocol: "pancakeswap-v3", tokenId: "36829", tickLower: 187536, tickUpper: 188536, note: "swap's own price impact left this mint stale — ~397.68 of the swapped USDT went unused as dust" },
+    params: { protocol: "pancakeswap-v3", tokenId: "36829", tickLower: 187536, tickUpper: 188536, note: "swap's own price impact left this mint stale, ~397.68 of the swapped USDT went unused as dust" },
   },
   {
     hash: "0xe4d5065bb9f95986951b4b4b734163a371c8b99e8743f3a1ad75fdfc859dfee5",
@@ -68,14 +68,14 @@ const KNOWN_ACTIONS = [
   {
     hash: "0x0c7657adb8870f68a40d20dedf552023a5306ae4be3f25243e768a23a7b0d9fc",
     type: "mint_position",
-    params: { protocol: "pancakeswap-v3", tokenId: "36830", tickLower: 189604, tickUpper: 190604, note: "re-mint with corrected sizing — dust dropped to ~0 USDT / ~0.00076 WBNB" },
+    params: { protocol: "pancakeswap-v3", tokenId: "36830", tickLower: 189604, tickUpper: 190604, note: "re-mint with corrected sizing, dust dropped to ~0 USDT / ~0.00076 WBNB" },
   },
   // Gap 2026-08-17 -> 2026-09-10: the agent's wallet took ~92 further real
   // transactions on its own (nonce went from ~13 to 105) that were never
   // added here, including at least one full remove+re-mint cycle (the
   // position now live on-chain is tokenId 37332, not 36830 above). Found
   // 2026-09-12 while investigating a real crash (see git history for
-  // pancake.ts's nfpmAbi fix) — reconstructing that gap needs an explorer
+  // pancake.ts's nfpmAbi fix), reconstructing that gap needs an explorer
   // API (this free public RPC's eth_getLogs is unusable, confirmed
   // rejecting even a 50-block range), so it's left as a known, disclosed
   // gap rather than guessed at. Only the four legs of the one dust-fold
@@ -108,7 +108,7 @@ const KNOWN_ACTIONS = [
       tokenId: "37332",
       amount0Usdt: "43395625",
       amount1Wbnb: "9679367716162755",
-      note: "increaseLiquidity — folded idle dust into the in-range position instead of leaving it idle. First real exercise of this code path; it had a latent bug (increaseLiquidity was missing from the hand-written nfpmAbi) that fatally crashed every monitor run from 2026-09-10 to 2026-09-11 until fixed this session.",
+      note: "increaseLiquidity, folded idle dust into the in-range position instead of leaving it idle. First real exercise of this code path; it had a latent bug (increaseLiquidity was missing from the hand-written nfpmAbi) that fatally crashed every monitor run from 2026-09-10 to 2026-09-11 until fixed this session.",
     },
   },
 ] as const;
@@ -139,7 +139,7 @@ async function main() {
   for (const a of KNOWN_ACTIONS) {
     const existing = await prisma.action.findFirst({ where: { txHash: a.hash } });
     if (existing) {
-      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…) — already synced`);
+      console.log(`  skip ${a.type} (${a.hash.slice(0, 10)}…), already synced`);
       continue;
     }
 
@@ -158,7 +158,7 @@ async function main() {
         result: receipt.status === "success" ? ActionResult.SUCCESS : ActionResult.FAIL,
       },
     });
-    console.log(`  synced ${a.type} — tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`);
+    console.log(`  synced ${a.type}, tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`);
   }
 
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
@@ -180,7 +180,7 @@ async function main() {
       successRate: snapshot.successRate,
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
-      netYieldPct: null, // real trading-fee accrual needs an observation window we haven't had yet — not invented
+      netYieldPct: null, // real trading-fee accrual needs an observation window we haven't had yet, not invented
       worstDrawdownPct: null,
       // Real BNB principal wrapped and deployed into the position (0.15
       // funded - 0.02 gas reserve).
@@ -199,7 +199,7 @@ async function main() {
   // fee-accrual window (in-range earning vs. the drifted position's zero
   // fee-earning) that we haven't held long enough to measure yet. The UI
   // already shows an honest "not yet available" state for this rather than
-  // a fabricated number — see apps/web/app/agents/[id]/page.tsx.
+  // a fabricated number, see apps/web/app/agents/[id]/page.tsx.
 
   await prisma.$disconnect();
 }

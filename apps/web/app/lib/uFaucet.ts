@@ -3,7 +3,7 @@ import type { Signer } from "@altananetwork/sdk";
 import { getAltanaClient, BNB_TESTNET } from "./altana";
 
 /**
- * $U (United Stables) testnet faucet on BSC Testnet — pays 10 $U to the
+ * $U (United Stables) testnet faucet on BSC Testnet, pays 10 $U to the
  * caller, once per address every 30 minutes. Confirmed real by the Altana
  * team directly (docs.altana.network/sdk/erc8183#get-testnet-u); this
  * project checked first and found no self-serve path documented anywhere
@@ -33,7 +33,7 @@ export async function claimTestnetU(address: Address, signer: Signer) {
 
 /**
  * Send a small amount of native tBNB from the connected wallet to another
- * address — used once to give the x402 facilitator EOA (which holds no
+ * address, used once to give the x402 facilitator EOA (which holds no
  * funds of its own by design) enough gas to test the $U faucet's plain-EOA
  * claim path (Method 2 in the Altana docs) after the smart-account path
  * (Method 1) reverted for real.

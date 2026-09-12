@@ -1,7 +1,7 @@
 // Placeholder data so every screen renders meaningfully before the DB is
 // wired up (week 1 goal per the build plan) and before the four reference
 // agents have real logged actions. Swap for Prisma queries against
-// @underwrit/db once the agents are deployed and running on testnet — every
+// @underwrit/db once the agents are deployed and running on testnet, every
 // field here is shaped exactly like the real EvidenceSnapshot/Action schema
 // so that swap is a data-source change, not a UI rewrite.
 
@@ -30,7 +30,7 @@ export interface MockAgent {
   confidenceScore: number;
   daysObserved: number;
   /** Real span since this agent's earliest logged EvidenceSnapshot, i.e. how
-   * long it's actually been live and monitored — distinct from daysObserved,
+   * long it's actually been live and monitored, distinct from daysObserved,
    * which only spans real Actions and stays low for an agent that's
    * correctly done nothing because nothing needed doing. Undefined for mock
    * agents, which have no snapshot history to derive it from. */
@@ -149,7 +149,7 @@ export const CATEGORY_ORDER: Category[] = [
 // Job Contract form can default its Category dropdown to something plausible
 // instead of silently sitting on CATEGORY_ORDER[0] regardless of what was
 // typed. This is a starting guess the user can always change, never a
-// substitute for them confirming it, and it never touches ranking itself —
+// substitute for them confirming it, and it never touches ranking itself,
 // computeJobFit still filters strictly on whatever category is actually
 // selected when the form is submitted.
 const CATEGORY_KEYWORDS: Record<Category, RegExp[]> = {

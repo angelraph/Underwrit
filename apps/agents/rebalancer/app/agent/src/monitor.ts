@@ -1,5 +1,5 @@
 /**
- * Standalone rebalancing runner — same pattern as the other two reference
+ * Standalone rebalancing runner, same pattern as the other two reference
  * agents' monitor.ts. Separate from main.ts's A2A/ERC-8183 seller server:
  * this IS the reference agent Underwrit scores, independent of whether
  * anyone hires it as a paid seller.
@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(result, null, 2));
 
   if (result.actionTaken) {
-    console.log(`[rebalancer] ACTED — ${result.action?.type}, tokenId ${result.action?.tokenId}, tx(s) ${result.action?.txHashes.join(", ")}`);
+    console.log(`[rebalancer] ACTED, ${result.action?.type}, tokenId ${result.action?.tokenId}, tx(s) ${result.action?.txHashes.join(", ")}`);
   } else {
     console.log(`[rebalancer] no action: ${result.skippedReason ?? "already in range"}`);
   }

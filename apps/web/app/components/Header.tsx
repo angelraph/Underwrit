@@ -15,7 +15,7 @@ const NAV_LINKS = [
 
 /**
  * Six nav links (including "Advantage Report", the longest label) plus the
- * wallet button need roughly 800px of clear width — more than `md`'s 768px
+ * wallet button need roughly 800px of clear width, more than `md`'s 768px
  * floor gives them. Collapses into a hamburger menu below `lg` instead, so
  * the switchover always has real room rather than overflowing right at the
  * boundary.

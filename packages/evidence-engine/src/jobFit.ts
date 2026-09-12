@@ -14,13 +14,13 @@ const WEIGHTS = {
  * subscores rather than a literal product: a pure product lets one weak
  * factor (e.g. a slightly-below-average price) crush an otherwise excellent
  * agent to near zero, which is hard to explain on a "shown transparently"
- * results screen. Weighted average keeps the same intent — no single factor
- * dominates, every factor matters — while staying legible as a breakdown bar
+ * results screen. Weighted average keeps the same intent, no single factor
+ * dominates, every factor matters, while staying legible as a breakdown bar
  * chart per candidate.
  *
  * Hard constraint violations (wrong category, drawdown over budget, protocol
  * outside the allowlist) make an agent ineligible entirely rather than just
- * lowering its score — a marketplace that ranks a disqualified agent #1 with
+ * lowering its score, a marketplace that ranks a disqualified agent #1 with
  * a caveat is not trustworthy.
  */
 export function computeJobFit(
@@ -62,7 +62,7 @@ export function computeJobFit(
   const riskCompatibility =
     candidate.worstDrawdownPct != null && constraints.maxDrawdownPct > 0
       ? 100 * (1 - (candidate.worstDrawdownPct / constraints.maxDrawdownPct) * 0.5)
-      : 75; // no drawdown data yet — neutral-leaning score, not a free pass
+      : 75; // no drawdown data yet, neutral-leaning score, not a free pass
 
   const { min, max } = peerCostRange;
   const priceEfficiency =

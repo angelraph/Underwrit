@@ -1,5 +1,5 @@
 /**
- * Deterministic signing — the Agent is the SOLE key-holder/signer.
+ * Deterministic signing, the Agent is the SOLE key-holder/signer.
  *
  * Every on-chain WRITE the Agent performs lives here as FIXED code:
  *
@@ -9,14 +9,14 @@
  *
  * These functions are NEVER registered as LLM-callable tools (`tools.ts` holds
  * only read-only tools). The price is a FIXED list price from studio.toml
- * (`listPrice()`, clamped by the entrypoint BEFORE it reaches here) — the LLM
+ * (`listPrice()`, clamped by the entrypoint BEFORE it reaches here), the LLM
  * only produces the work text and never moves money or sets a price.
  *
  * The key is loaded by `@bnbagent/studio-runtime/wallet` `getWallet()` (local
  * keystore, unlocked by `WALLET_PASSWORD`). It is injected into the AgentCore
  * runtime via the secret store, never bundled into the code package.
  *
- * You own this file — edit the pricing clamp source / manifest shape if your
+ * You own this file, edit the pricing clamp source / manifest shape if your
  * domain needs it, but keep these ops OUT of the LLM tool list.
  */
 
@@ -51,7 +51,7 @@ let tomlLoader: StudioTomlLoader = defaultTomlLoader;
 /** Test seam: replace the studio.toml loader. Pass null to restore. */
 export function _setStudioTomlLoader(loader: StudioTomlLoader | null): void {
   tomlLoader = loader ?? defaultTomlLoader;
-  handler = null; // config feeds the cached handler — rebuild it
+  handler = null; // config feeds the cached handler, rebuild it
 }
 
 /** The narrow NegotiationHandler surface signQuote drives (test-fakeable). */
@@ -129,7 +129,7 @@ export function commerceVerifyingContract(
  */
 export function priceBounds(): [bigint, bigint] {
   const cfg = erc8183Cfg();
-  // TODO: if min/max are absent the bounds default to (0, +inf) — i.e. NO
+  // TODO: if min/max are absent the bounds default to (0, +inf), i.e. NO
   // clamp. Set [payments.erc8183].min_price / max_price in studio.toml to
   // enforce a real floor/ceiling (strongly recommended for production).
   // The scaffold ships max_price = "" (an empty string, not absent), so treat
@@ -144,7 +144,7 @@ export function priceBounds(): [bigint, bigint] {
 /**
  * Return the seller's list price in raw wei from studio.toml.
  *
- * Reads `[payments.erc8183].price` — the deterministic asking price every
+ * Reads `[payments.erc8183].price`, the deterministic asking price every
  * quote uses (rule-based pricing; no LLM in the quote path). Empty/absent → 0.
  * Edit `price` in studio.toml to change what you charge. The value is still
  * clamped to `[minPrice, maxPrice]` by {@link clampPrice} before signing.
@@ -174,7 +174,7 @@ export function clampPrice(proposedWei: bigint): bigint {
  * (prevents cross-chain replay). The runtime client facade does not expose
  * them, so
  * they come from the SDK's on-chain address registry for the configured
- * network — the same addresses the live client is constructed from.
+ * network, the same addresses the live client is constructed from.
  */
 function getHandler(): NegotiationHandlerLike {
   if (handler === null) {
@@ -186,7 +186,7 @@ function getHandler(): NegotiationHandlerLike {
     const network = erc8183Network(networkName);
     const wallet = getWallet();
     handler = new NegotiationHandler({
-      servicePrice: "0", // placeholder — overridden per call via price=
+      servicePrice: "0", // placeholder, overridden per call via price=
       currency,
       estimatedCompletionSeconds: est,
       ...negotiationSignerOptions(wallet),
@@ -202,11 +202,11 @@ function getHandler(): NegotiationHandlerLike {
  * Negotiate + EIP-191-sign a quote at `clampedPriceWei`; return the SDK
  * envelope.
  *
- * Reuses a process-wide NegotiationHandler (cached — its chainId +
+ * Reuses a process-wide NegotiationHandler (cached, its chainId +
  * verifyingContract are stable per process) and overrides the price for this
  * request via `negotiate(..., { price: String(clampedPriceWei) })`.
  *
- * Returns the SDK's `NegotiationResult.toDict()` envelope **verbatim** — the
+ * Returns the SDK's `NegotiationResult.toDict()` envelope **verbatim**, the
  * exact wire structure a buyer parses and feeds to `buildJobDescription` to
  * anchor on-chain (see docs/design/erc8183-reference.md §2). On accept it
  * carries `response.terms.price`/`currency`, `quote_expires_at`,
@@ -257,8 +257,8 @@ export async function verifySignedJob(jobId: number): Promise<Verdict> {
 /**
  * Return the on-chain `JobDescription` for `jobId` (`null` if unstructured).
  *
- * The task + terms the buyer ANCHORED ON-CHAIN — and that this agent's
- * `provider_sig` covers — are the authoritative work spec. The work hook
+ * The task + terms the buyer ANCHORED ON-CHAIN, and that this agent's
+ * `provider_sig` covers, are the authoritative work spec. The work hook
  * reads the task from HERE (the on-chain job description), so the Agent
  * delivers exactly the deal it signed.
  * Returns `null` for legacy/plain-text descriptions (caller falls back).
@@ -275,7 +275,7 @@ export async function jobSpec(jobId: number): Promise<JobDescription | null> {
  * Delegates to `@bnbagent/studio-runtime/erc8183` `submitWorkflow`, which
  * re-verifies the job is genuinely FUNDED + assigned to us (via the SDK's
  * `ERC8183JobOps.verifyJob`), builds the `DeliverableManifest`, uploads it
- * to storage, and calls on-chain `submit` — all `auditedOp`-wrapped.
+ * to storage, and calls on-chain `submit`, all `auditedOp`-wrapped.
  * Returns the `SubmitResult` (`.submitTx` + `.deliverableUrl`);
  * `deliverableUrl` is published on-chain by the submit, so the buyer fetches
  * the canonical manifest from storage without an on-chain log scan.

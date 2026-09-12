@@ -1,7 +1,7 @@
 /**
  * Load `.studio/.env.local` for standalone scripts run outside the `bag` CLI
  * wrapper. See healthfactormonitor's identical loadEnv.ts for the full
- * rationale — same fix, same reason, duplicated for the same deploy-isolation
+ * rationale, same fix, same reason, duplicated for the same deploy-isolation
  * constraint (this is its own standalone pnpm workspace).
  */
 
@@ -16,6 +16,6 @@ const envPath = path.resolve(
 try {
   process.loadEnvFile(envPath);
 } catch {
-  // absent/unreadable — fine for a deployed runtime or a shell that already
+  // absent/unreadable, fine for a deployed runtime or a shell that already
   // exported WALLET_PASSWORD itself.
 }

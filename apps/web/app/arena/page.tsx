@@ -2,13 +2,13 @@ import Link from "next/link";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "../lib/mockData";
 import { getAllAgents } from "../lib/agents";
 
-// Same reasoning as categories/page.tsx — read live, never bake in a
+// Same reasoning as categories/page.tsx, read live, never bake in a
 // build-time snapshot of the leaderboard.
 export const dynamic = "force-dynamic";
 
 // A standardized, identical-conditions scenario runner per category
 // (the `ArenaRun` model exists in the schema for exactly this) hasn't been
-// built yet — every agent's ranking below is each agent's own real,
+// built yet, every agent's ranking below is each agent's own real,
 // independently-verified organic on-chain evidence, not a head-to-head
 // run under matched capital/timing/market conditions. Framed honestly as
 // that until the scenario runner is real, rather than claiming a

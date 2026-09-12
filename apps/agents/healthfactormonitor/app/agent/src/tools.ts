@@ -6,7 +6,7 @@
  * may call any tool in this set while producing the deliverable (the
  * `notify_funded` work step); the `description` is what the LLM sees.
  *
- * You own this file — edit `LLM_READ_TOOLS` to control exactly what your
+ * You own this file, edit `LLM_READ_TOOLS` to control exactly what your
  * agent can read on-chain. Entries for features your project doesn't use are
  * commented out by default; uncomment after you've added the dependency to
  * `studio.toml`.
@@ -14,8 +14,8 @@
  * **All tools are read-only** by the studio definition: no on-chain state
  * change, no transferable authority, no transaction signing, no EIP-712
  * typed-data signing. The agent IS the sole on-chain signer, but ALL of its
- * signing — quote-sign, submitResult, settle, plus the automatic
- * budget-gated Pieverse LLM-credit auto-renew inside `buildModel()` — lives
+ * signing, quote-sign, submitResult, settle, plus the automatic
+ * budget-gated Pieverse LLM-credit auto-renew inside `buildModel()`, lives
  * in `signing.ts` / `model.ts` as FIXED entrypoint code and is NEVER a tool
  * the LLM can invoke. The LLM only produces work text after a job is
  * verified funded; it can never price, sign, spend, or mutate chain state.
@@ -35,7 +35,7 @@ import { getAccountLiquidity, getVUsdtBorrowBalance } from "./venus.js";
 import { assessRisk } from "./healthFactorGuard.js";
 
 /**
- * The project-wide default network (`[network].default`) — tool calls that
+ * The project-wide default network (`[network].default`), tool calls that
  * omit `network` fall back to it, never to a hardcoded name.
  */
 function defaultNetwork(): string {
@@ -128,7 +128,7 @@ export const LLM_READ_TOOLS: ToolSet = {
       cr.agentByAddress(address, network ?? defaultNetwork()),
   }),
 
-  // --- ERC-8183 jobs (READ-ONLY status/list — writes live in signing.ts) ---
+  // --- ERC-8183 jobs (READ-ONLY status/list, writes live in signing.ts) ---
   job_status: tool({
     // requires [erc8183] in studio.toml
     description: "Read-only ERC-8183 job summary (status, budget, deliverable URL).",
@@ -150,14 +150,14 @@ export const LLM_READ_TOOLS: ToolSet = {
     execute: async ({ limit, mine, network }) =>
       cr.jobList({ limit, mine, network: network ?? defaultNetwork() }),
   }),
-  // job_count: ...        // network-wide stat — usually noise
+  // job_count: ...        // network-wide stat, usually noise
 
-  // --- Venus Protocol (read-only — the actual repay logic lives in healthFactorGuard.ts, never here) ---
+  // --- Venus Protocol (read-only, the actual repay logic lives in healthFactorGuard.ts, never here) ---
   venus_account_health: tool({
     description:
       "Read a wallet's Venus Protocol Core Pool position on BSC Testnet: spare " +
       "borrowing capacity, any shortfall, outstanding vUSDT borrow, and a risk " +
-      "tier (HEALTHY/MODERATE/AT_RISK/UNDERWATER). Read-only — describes the " +
+      "tier (HEALTHY/MODERATE/AT_RISK/UNDERWATER). Read-only, describes the " +
       "position, never acts on it.",
     inputSchema: z.object({
       address: z.string().describe("0x wallet address to check"),
@@ -181,8 +181,8 @@ export const LLM_READ_TOOLS: ToolSet = {
   }),
 
   // --- Advanced / footguns (commented by default) ---
-  // contract_call_view: ...  // accepts any ABI — LLM-callable footgun
+  // contract_call_view: ...  // accepts any ABI, LLM-callable footgun
   // block_info: ...
-  // wallet_list: ...          // multi-wallet management — dev concern
+  // wallet_list: ...          // multi-wallet management, dev concern
   // wallet_address: ...       // alias of wallet_info
 };

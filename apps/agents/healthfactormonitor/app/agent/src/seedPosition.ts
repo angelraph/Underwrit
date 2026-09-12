@@ -1,5 +1,5 @@
 /**
- * One-off DEMO SETUP script — NOT part of the agent's runtime.
+ * One-off DEMO SETUP script, NOT part of the agent's runtime.
  *
  * Opens a real Venus Protocol testnet position (supply BNB collateral,
  * borrow USDT) so the guardian (`healthFactorGuard.ts` / `monitor.ts`) has an
@@ -12,7 +12,7 @@
  * --collateral is BNB supplied as collateral (default 0.05 BNB, leaves most
  *   of the funded 0.3 tBNB for gas across many runs).
  * --borrow is a DIRECT decimal amount of USDT to borrow (default a small,
- *   conservative 1 USDT — deliberately not computed as "N% of capacity",
+ *   conservative 1 USDT, deliberately not computed as "N% of capacity",
  *   since that requires trusting an assumed price-oracle scaling we haven't
  *   independently verified for this testnet deployment; a small fixed amount
  *   plus the transaction's own on-chain revert is the safer guardrail). Raise
@@ -20,7 +20,7 @@
  *   repay path against a position closer to its limit.
  */
 
-import "./loadEnv.js"; // must run before any getWallet() call — see loadEnv.ts
+import "./loadEnv.js"; // must run before any getWallet() call, see loadEnv.ts
 import {
   ensureAltanaSessionLoaded,
   ensureKeystoreMaterialized,
@@ -86,7 +86,7 @@ async function main() {
     `[seed] Comptroller reports liquidity=${liquidity.liquidityUsd} shortfall=${liquidity.shortfallUsd} (1e18-scaled USD)`,
   );
   if (liquidity.liquidityUsd === 0n) {
-    console.log("[seed] no borrowing capacity reported yet — stopping before the borrow step.");
+    console.log("[seed] no borrowing capacity reported yet, stopping before the borrow step.");
     return;
   }
 
@@ -109,7 +109,7 @@ async function main() {
     description: `Borrow ${borrowUsdt} USDT against BNB collateral (demo seed)`,
   });
   console.log(`[seed] borrow tx: ${borrowRes.transactionHash}`);
-  console.log("[seed] done — run `tsx src/monitor.ts` to check the resulting position.");
+  console.log("[seed] done, run `tsx src/monitor.ts` to check the resulting position.");
 }
 
 main().catch((e) => {

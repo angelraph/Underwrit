@@ -11,14 +11,14 @@ import type { Address } from "viem";
 
 /**
  * Real PancakeSwap V3 pool state for the WBNB/USDT pair on BSC Testnet,
- * read live across every standard fee tier — no subgraph, no historical
+ * read live across every standard fee tier, no subgraph, no historical
  * volume/imbalance estimate (those need an indexer this project doesn't
  * have; inventing plausible-looking numbers for them is exactly the kind
  * of fabrication this project has deliberately avoided everywhere else).
  *
  * What's real and computable from a single on-chain read: which tiers
  * actually have a pool with real liquidity right now, and which are
- * completely uninitialized. That's a genuine, checkable signal — an
+ * completely uninitialized. That's a genuine, checkable signal, an
  * uninitialized tier means literally zero LPs are competing for that
  * tier's fee revenue on this pair yet.
  */
@@ -54,7 +54,7 @@ export async function getWbnbUsdtFeeTierStates(): Promise<FeeTierState[]> {
       ]);
 
       // A pool contract can exist (deployed by getPool's CREATE2 logic) but
-      // never have been initialized with a starting price — MIN_TICK is
+      // never have been initialized with a starting price, MIN_TICK is
       // TickMath's sentinel for "never initialized", not a real price.
       const MIN_TICK = -887272;
       const initialized = slot0[1] !== MIN_TICK && liquidity > BigInt(0);
