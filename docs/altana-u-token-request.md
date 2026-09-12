@@ -6,6 +6,17 @@ self-serve path: no faucet for $U anywhere in the docs/SDK, no public mint
 function on the testnet token contract (0xc70B87...E5565 on chain 97), and no
 PancakeSwap testnet liquidity for it either.
 
+**Update 2026-09-12**: Altana shipped SDK/MCP 0.9.0 (announced in the
+Builders Telegram), which this project has upgraded to. It ships
+`createPrivateKeySigner` — documented as "server-side or CLI use" — which
+removes the WebAuthn/browser dependency entirely: a fresh buyer/test wallet
+(`0xb33e52bb5dece784b735baB75A8Aa63f00f8210E` on BSC Testnet) was created
+this way and can drive the full requestTokens -> hire -> pay round trip from
+a script. Still blocked on the same thing as before: this wallet (and the
+x402 facilitator, see `docs/x402-facilitator-funding.md`) both need a small
+real tBNB funding before either can execute anything on-chain. Once funded,
+this becomes independently re-runnable without further manual steps.
+
 ---
 
 Hi — building Underwrit for BNB Chain's "Build the Era" hackathon (agent

@@ -17,3 +17,9 @@ The sell endpoint (`/api/x402/evidence/[agentId]`) needs three things to go live
    blocked — see `docs/altana-u-token-request.md`. The endpoint itself is
    live and correctly issues a 402 challenge without it; only the fully
    paid round-trip is unverified.
+
+**Update 2026-09-12**: checked again — the facilitator wallet is still at 0
+tBNB. With the Altana SDK 0.9.0 upgrade (see `docs/altana-u-token-request.md`),
+the whole round trip (buyer wallet + facilitator) can now be driven from a
+script instead of needing a browser/WebAuthn session — both just need a
+small real tBNB funding to actually go.
