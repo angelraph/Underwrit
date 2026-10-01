@@ -71,6 +71,8 @@ export const poolAbi = parseAbi([
   "function token0() view returns (address)",
   "function token1() view returns (address)",
   "function fee() view returns (uint24)",
+  "function feeGrowthGlobal0X128() view returns (uint256)",
+  "function feeGrowthGlobal1X128() view returns (uint256)",
 ]);
 
 // ExactInputSingleParams confirmed via BscScan Testnet's verified ABI panel
@@ -132,6 +134,23 @@ export function getPancakePublicClient(): PublicClient {
     ),
   });
   return client;
+}
+
+let archive: PublicClient | undefined;
+
+/**
+ * Reads past blocks' state, which the default public RPC can't serve. Used
+ * only for the fee-income check in rebalancerCore.ts. The NodeReal URL is
+ * the free public BSC Testnet endpoint listed in BNB Chain's own docs.
+ */
+export function getArchivePublicClient(): PublicClient {
+  archive ??= createPublicClient({
+    chain: bscTestnet,
+    transport: http(
+      process.env.BSC_TESTNET_ARCHIVE_RPC_URL || "https://bsc-testnet.nodereal.io/v1/e9a36765eb8a40b9bd12e680a1fd2bc5",
+    ),
+  });
+  return archive;
 }
 
 export interface PoolState {

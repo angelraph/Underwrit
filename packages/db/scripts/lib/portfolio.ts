@@ -6,7 +6,7 @@
  * its first action, then value them at today's price.
  */
 
-import { erc20Abi, formatEther, formatUnits, type PublicClient } from "viem";
+import { erc20Abi, formatEther, formatUnits, parseAbi, type PublicClient } from "viem";
 import { pancakeV3NfpmAbi, PANCAKESWAP_V3_TESTNET, VENUS_USDT_TESTNET } from "@underwrit/chain";
 import { prisma } from "@underwrit/db";
 
@@ -84,6 +84,42 @@ export function positionAmounts(
   const raw0 = L * (1 / s - 1 / sb); // USDT, 6 dp
   const raw1 = L * (s - sa); // WBNB, 18 dp
   return { usdt: (raw0 + Number(p.tokensOwed0)) / 1e6, wbnb: (raw1 + Number(p.tokensOwed1)) / 1e18 };
+}
+
+const nfpmOwnerAbi = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
+]);
+
+/** Every PancakeSwap V3 position the wallet owned at `blockNumber`. */
+export async function ownedPositions(client: PublicClient, wallet: `0x${string}`, blockNumber?: bigint) {
+  const nfpm = PANCAKESWAP_V3_TESTNET.nonfungiblePositionManager;
+  const count = await client.readContract({ address: nfpm, abi: nfpmOwnerAbi, functionName: "balanceOf", args: [wallet], blockNumber });
+  const positions = [];
+  for (let i = 0n; i < count; i++) {
+    const id = await client.readContract({ address: nfpm, abi: nfpmOwnerAbi, functionName: "tokenOfOwnerByIndex", args: [wallet, i], blockNumber });
+    positions.push(await readPosition(client, id, blockNumber));
+  }
+  return positions;
+}
+
+/**
+ * BNB value, at `tick`'s price, of what the wallet held at `blockNumber`:
+ * idle tokens as they were, plus each position it owned then, closed out at
+ * `tick`. Pass an old block with today's tick to ask "what would that
+ * untouched holding be worth now".
+ */
+export async function walletValueBnb(client: PublicClient, wallet: `0x${string}`, blockNumber: bigint, tick: number): Promise<number> {
+  const [idle, positions] = await Promise.all([readHoldings(client, wallet, blockNumber), ownedPositions(client, wallet, blockNumber)]);
+  let usdt = idle.usdt;
+  let wbnb = idle.wbnb;
+  for (const p of positions) {
+    const amounts = positionAmounts(p, tick);
+    usdt += amounts.usdt;
+    wbnb += amounts.wbnb;
+  }
+  const usdtPerBnb = 1 / ((1.0001 ** tick * 1e6) / 1e18);
+  return valueInBnb({ native: idle.native, wbnb, usdt }, usdtPerBnb);
 }
 
 export async function readPosition(client: PublicClient, tokenId: bigint, blockNumber?: bigint) {

@@ -12,7 +12,7 @@ export const ARENA_SCENARIO = "vs-do-nothing";
 export async function recordArenaRun(
   agentId: string,
   category: Category,
-  m: { baselineBnb: number; actualBnb: number; block: bigint; baseline: string },
+  m: { baselineBnb: number; actualBnb: number; block: bigint; baseline: string; window?: string },
 ): Promise<void> {
   const vsBaselinePct = ((m.actualBnb - m.baselineBnb) / m.baselineBnb) * 100;
   await prisma.arenaRun.create({
@@ -27,8 +27,11 @@ export async function recordArenaRun(
         valueCreatedBnb: m.actualBnb - m.baselineBnb,
         vsBaselinePct,
         block: m.block.toString(),
+        // Set when this row measures one strategy version from its own start
+        // (e.g. "v2"), rather than the agent's whole history.
+        ...(m.window ? { window: m.window } : {}),
       },
     },
   });
-  console.log(`  arena: recorded ${vsBaselinePct >= 0 ? "+" : ""}${vsBaselinePct.toFixed(2)}% vs "${m.baseline}" at block ${m.block}`);
+  console.log(`  arena${m.window ? ` (${m.window})` : ""}: recorded ${vsBaselinePct >= 0 ? "+" : ""}${vsBaselinePct.toFixed(2)}% vs "${m.baseline}" at block ${m.block}`);
 }

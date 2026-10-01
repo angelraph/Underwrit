@@ -21,7 +21,14 @@ interface ArenaMetrics {
   valueCreatedBnb: number;
   vsBaselinePct: number;
   block: string;
+  /** Set when the row measures one strategy version from its own start, e.g. "v2". */
+  window?: string;
 }
+
+type ArenaEntry = { latest: ArenaMetrics; latestAt: Date; count: number; firstAt: Date };
+
+/** One entry per agent and measurement window (all-time, or a strategy version's own record). */
+const entryKey = (agentId: string, window?: string) => `${agentId}:${window ?? "all"}`;
 
 function since(date: Date): string {
   const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
@@ -36,11 +43,13 @@ export default async function ArenaPage() {
     prisma.arenaRun.findMany({ where: { scenarioId: ARENA_SCENARIO }, orderBy: { runAt: "desc" } }),
   ]);
 
-  const byAgent = new Map<string, { latest: ArenaMetrics; latestAt: Date; count: number; firstAt: Date }>();
+  const byAgent = new Map<string, ArenaEntry>();
   for (const run of runs) {
-    const entry = byAgent.get(run.agentId);
+    const metrics = run.metricsJson as unknown as ArenaMetrics;
+    const key = entryKey(run.agentId, metrics.window);
+    const entry = byAgent.get(key);
     if (!entry) {
-      byAgent.set(run.agentId, { latest: run.metricsJson as unknown as ArenaMetrics, latestAt: run.runAt, count: 1, firstAt: run.runAt });
+      byAgent.set(key, { latest: metrics, latestAt: run.runAt, count: 1, firstAt: run.runAt });
     } else {
       entry.count++;
       entry.firstAt = run.runAt; // runs are newest first, so the last one seen is the earliest
@@ -78,7 +87,7 @@ function CategoryTable({
 }: {
   category: Category;
   agents: Awaited<ReturnType<typeof getAllAgents>>;
-  byAgent: Map<string, { latest: ArenaMetrics; latestAt: Date; count: number; firstAt: Date }>;
+  byAgent: Map<string, ArenaEntry>;
 }) {
   // Health Factor protection isn't a holdings-vs-baseline contest: its job
   // is to repay before liquidation, so it's compared on response time.
@@ -121,8 +130,17 @@ function CategoryTable({
     );
   }
 
+  // All-time rows are ranked against each other. A strategy version's own
+  // record sits directly under its agent: it measures a different window
+  // against a different starting point, so it isn't ranked with them.
   const ranked = agents
-    .map((agent) => ({ agent, arena: byAgent.get(agent.id) }))
+    .map((agent) => ({
+      agent,
+      arena: byAgent.get(entryKey(agent.id)),
+      versions: [...byAgent.entries()]
+        .filter(([key]) => key.startsWith(`${agent.id}:`) && key !== entryKey(agent.id))
+        .map(([, v]) => v),
+    }))
     .sort((a, b) => (b.arena?.latest.vsBaselinePct ?? -Infinity) - (a.arena?.latest.vsBaselinePct ?? -Infinity));
   const baselineText = ranked.find((r) => r.arena)?.arena?.latest.baseline;
 
@@ -142,7 +160,7 @@ function CategoryTable({
             </tr>
           </thead>
           <tbody>
-            {ranked.map(({ agent, arena }, i) => (
+            {ranked.map(({ agent, arena, versions }, i) => [
               <tr key={agent.id} className="border-t border-border">
                 <td className="px-4 py-3 text-muted">{arena ? i + 1 : "-"}</td>
                 <td className="px-4 py-3">
@@ -170,8 +188,27 @@ function CategoryTable({
                     not measured yet
                   </td>
                 )}
-              </tr>
-            ))}
+              </tr>,
+              ...versions.map((v) => (
+                <tr key={`${agent.id}-${v.latest.window}`} className="border-t border-border bg-surface-raised/40">
+                  <td className="px-4 py-3 text-muted" />
+                  <td className="px-4 py-3 text-muted">
+                    {v.latest.window} only
+                    <div className="text-xs">vs. {v.latest.baseline}</div>
+                  </td>
+                  <td className={`px-4 py-3 mono-nums ${v.latest.vsBaselinePct < 0 ? "text-risk-high" : "text-accent"}`}>
+                    {formatSignedPct(v.latest.vsBaselinePct)}
+                  </td>
+                  <td className="px-4 py-3 mono-nums whitespace-nowrap">
+                    {formatOutcome(v.latest.actualBnb, "BNB")} / {formatOutcome(v.latest.baselineBnb, "BNB")}
+                  </td>
+                  <td className="px-4 py-3 text-muted whitespace-nowrap">
+                    {v.count === 1 ? `1 so far, ${since(v.latestAt)}` : `${v.count}, first ${since(v.firstAt)}, latest ${since(v.latestAt)}`}{" "}
+                    (block {v.latest.block})
+                  </td>
+                </tr>
+              )),
+            ])}
           </tbody>
         </table>
       </div>

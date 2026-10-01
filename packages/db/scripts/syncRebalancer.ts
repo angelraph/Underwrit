@@ -19,13 +19,12 @@
  * is idempotent: it skips any tx hash already present in the Action table.
  */
 
-import { createPublicClient, formatEther, http, parseAbi } from "viem";
-import { PANCAKESWAP_V3_TESTNET } from "@underwrit/chain";
+import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
 import { markAbandonedApprovals } from "./lib/abandonedApprovals";
 import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
 import { recordArenaRun } from "./lib/arena";
-import { positionAmounts, readHoldings, readPosition, valueInBnb } from "./lib/portfolio";
+import { positionAmounts, readHoldings, readPosition, valueInBnb, walletValueBnb } from "./lib/portfolio";
 import { archiveClient, syncWalletHistory } from "./lib/walletHistory";
 import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
 import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
@@ -41,10 +40,11 @@ const FIRST_POSITION_ID = 36829n;
 const FIRST_OPEN_MINT_TX = "0xc9a5a0dc6949d6bfca8e5dd581875939d89f0f258df3bb222351addf12bb85d0";
 const FIRST_POSITION_REMOVE_TX = "0xe4d5065bb9f95986951b4b4b734163a371c8b99e8743f3a1ad75fdfc859dfee5";
 
-const nfpmOwnerAbi = parseAbi([
-  "function balanceOf(address owner) view returns (uint256)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
-]);
+// Rebalancer v2 (fee-aware, see rebalancerCore.ts) went live after this
+// block, 2026-10-01 11:59:59 UTC. Its own record is measured from here.
+const V2_START_BLOCK = 134242319n;
+
+
 
 const KNOWN_ACTIONS = [
   {
@@ -203,33 +203,28 @@ async function main() {
   // 2026-10-01 that every USDT/WBNB transfer into this wallet came from the
   // pool, router or position manager, so no outside top-up skews it.
   const archive = archiveClient();
-  let managed: { baseline: number; actual: number; block: bigint } | null = null;
-  {
-    const block = await archive.getBlockNumber();
-    const firstMint = await archive.getTransactionReceipt({ hash: FIRST_OPEN_MINT_TX });
-    const firstRemove = await archive.getTransactionReceipt({ hash: FIRST_POSITION_REMOVE_TX });
-    const [afterOpen, firstPosition, now] = await Promise.all([
-      readHoldings(archive, AGENT_WALLET, firstMint.blockNumber),
-      readPosition(archive, FIRST_POSITION_ID, firstRemove.blockNumber - 1n),
-      readHoldings(archive, AGENT_WALLET, block),
-    ]);
-    const owned = await archive.readContract({ address: PANCAKESWAP_V3_TESTNET.nonfungiblePositionManager, abi: nfpmOwnerAbi, functionName: "balanceOf", args: [AGENT_WALLET], blockNumber: block });
-    let positionsUsdt = 0;
-    let positionsWbnb = 0;
-    for (let i = 0n; i < owned; i++) {
-      const id = await archive.readContract({ address: PANCAKESWAP_V3_TESTNET.nonfungiblePositionManager, abi: nfpmOwnerAbi, functionName: "tokenOfOwnerByIndex", args: [AGENT_WALLET, i], blockNumber: block });
-      const amounts = positionAmounts(await readPosition(archive, id, block), now.tick);
-      positionsUsdt += amounts.usdt;
-      positionsWbnb += amounts.wbnb;
-    }
-    const left = positionAmounts(firstPosition, now.tick);
-    managed = {
-      baseline: valueInBnb({ native: afterOpen.native, wbnb: afterOpen.wbnb + left.wbnb, usdt: afterOpen.usdt + left.usdt }, now.usdtPerBnb),
-      actual: valueInBnb({ native: now.native, wbnb: now.wbnb + positionsWbnb, usdt: now.usdt + positionsUsdt }, now.usdtPerBnb),
-      block,
-    };
-    console.log(`  vs unmanaged: holds ${managed.actual.toFixed(4)} BNB now, first range left alone would hold ${managed.baseline.toFixed(4)} BNB`);
-  }
+  const block = await archive.getBlockNumber();
+  const now = await readHoldings(archive, AGENT_WALLET, block);
+  const firstMint = await archive.getTransactionReceipt({ hash: FIRST_OPEN_MINT_TX });
+  const firstRemove = await archive.getTransactionReceipt({ hash: FIRST_POSITION_REMOVE_TX });
+  const [afterOpen, firstPosition, actual] = await Promise.all([
+    readHoldings(archive, AGENT_WALLET, firstMint.blockNumber),
+    readPosition(archive, FIRST_POSITION_ID, firstRemove.blockNumber - 1n),
+    walletValueBnb(archive, AGENT_WALLET, block, now.tick),
+  ]);
+  const left = positionAmounts(firstPosition, now.tick);
+  const managed = {
+    baseline: valueInBnb({ native: afterOpen.native, wbnb: afterOpen.wbnb + left.wbnb, usdt: afterOpen.usdt + left.usdt }, now.usdtPerBnb),
+    actual,
+    block,
+  };
+  console.log(`  vs unmanaged: holds ${managed.actual.toFixed(4)} BNB now, first range left alone would hold ${managed.baseline.toFixed(4)} BNB`);
+
+  // v2's own record (see rebalancerCore.ts's header): what the wallet held
+  // when v2 went live, left untouched, against what it holds now. Same
+  // block, same price for both sides.
+  const v2Baseline = await walletValueBnb(archive, AGENT_WALLET, V2_START_BLOCK, now.tick);
+  console.log(`  v2: holds ${actual.toFixed(6)} BNB now, ${v2Baseline.toFixed(6)} BNB if left as it was at v2 start (block ${V2_START_BLOCK})`);
 
   await prisma.evidenceSnapshot.create({
     data: {
@@ -238,7 +233,7 @@ async function main() {
       successRate: snapshot.successRate,
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
-      netYieldPct: managed ? ((managed.actual - managed.baseline) / managed.baseline) * 100 : null, // vs. unmanaged, see above
+      netYieldPct: ((managed.actual - managed.baseline) / managed.baseline) * 100, // vs. unmanaged, see above
       worstDrawdownPct: null,
       // Real BNB principal wrapped and deployed into the position (0.15
       // funded - 0.02 gas reserve).
@@ -253,7 +248,7 @@ async function main() {
 
   // Replaced every sync, since both sides move with price.
   const latest = await prisma.action.findFirst({ where: { agentId: agent.id }, orderBy: { timestamp: "desc" } });
-  if (managed && latest) {
+  if (latest) {
     const cf = computeCounterfactual({
       baselineScenario: CATEGORY_BASELINES.REBALANCING,
       baselineOutcome: managed.baseline,
@@ -271,6 +266,13 @@ async function main() {
       baseline: CATEGORY_BASELINES.REBALANCING,
     });
   }
+  await recordArenaRun(agent.id, Category.REBALANCING, {
+    baselineBnb: v2Baseline,
+    actualBnb: actual,
+    block,
+    baseline: "kept the position exactly as it was when v2 went live",
+    window: "v2",
+  });
 
   await prisma.$disconnect();
 }

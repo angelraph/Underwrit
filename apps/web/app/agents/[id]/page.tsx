@@ -34,6 +34,20 @@ export default async function AgentPassportPage({
     // DB unreachable, leave counterfactual null, page still renders.
   }
 
+  // A strategy version's own record (e.g. the Rebalancer's v2), measured
+  // from that version's start rather than the agent's whole history.
+  const recentRuns = await prisma.arenaRun.findMany({ where: { agentId: agent.id }, orderBy: { runAt: "desc" }, take: 20 });
+  const versionRun = recentRuns.find((r) => (r.metricsJson as Record<string, unknown>)?.window);
+  const version = versionRun
+    ? (versionRun.metricsJson as { window: string; baseline: string; baselineBnb: number; actualBnb: number; vsBaselinePct: number })
+    : null;
+  const versionStart = versionRun
+    ? (await prisma.arenaRun.findFirst({
+        where: { agentId: agent.id, metricsJson: { path: ["window"], equals: version!.window } },
+        orderBy: { runAt: "asc" },
+      }))?.runAt
+    : undefined;
+
   const actions = await prisma.action.findMany({
     where: { agentId: agent.id },
     orderBy: { timestamp: "desc" },
@@ -118,6 +132,22 @@ export default async function AgentPassportPage({
                 </div>
               </div>
             </div>
+            {version && (
+              <div className="mt-5 border-t border-border pt-4 text-sm">
+                <div className="font-medium">
+                  Strategy {version.window} on its own
+                  {versionStart ? `, since ${versionStart.toISOString().slice(0, 10)}` : ""}
+                </div>
+                <p className="mt-1 text-muted">
+                  Compared against: &quot;{version.baseline}&quot;. Holds {formatOutcome(version.actualBnb, "BNB")} vs.{" "}
+                  {formatOutcome(version.baselineBnb, "BNB")} (
+                  <span className={version.vsBaselinePct < 0 ? "text-risk-high" : "text-accent"}>
+                    {formatSignedPct(version.vsBaselinePct)}
+                  </span>
+                  ). The all-time figure above still includes everything before {version.window}.
+                </p>
+              </div>
+            )}
           </>
         ) : (
           <p className="mt-3 text-sm text-muted">
