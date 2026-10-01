@@ -4,7 +4,7 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   type Category,
-} from "../../lib/mockData";
+} from "../../lib/catalog";
 import { getAllAgents } from "../../lib/agents";
 import { PassportCard } from "../../components/PassportCard";
 

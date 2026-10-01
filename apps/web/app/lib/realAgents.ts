@@ -1,11 +1,9 @@
 import { prisma } from "@underwrit/db";
-import type { MockAgent } from "./mockData";
+import type { AgentView } from "./catalog";
 
 /**
- * Bridges real Prisma-backed agents into the same shape the UI already
- * renders (`MockAgent`) so PassportCard etc. don't need two code paths.
- * As each reference agent goes from mock to real, its category simply stops
- * appearing in the mock fallback set (see getAllAgents in agents.ts).
+ * Maps each Prisma agent and its latest EvidenceSnapshot into the shape
+ * every page renders (`AgentView`).
  */
 
 function deriveRisk(confidenceScore: number): "Low" | "Moderate" | "High" {
@@ -18,10 +16,12 @@ const CATEGORY_PERMISSIONS: Record<string, string[]> = {
   HEALTH_FACTOR: ["Venus: repay", "Venus: read position"],
   REBALANCING: ["PancakeSwap: liquidity", "PancakeSwap: swap"],
   GRID: ["PancakeSwap: swap"],
-  YIELD: ["Venus: lend", "Lista: stake", "PancakeSwap: liquidity"],
+  // Venus supply only. Lista was dropped (no BSC Testnet deployment) and the
+  // Yield Router never touches PancakeSwap, so neither is requested here.
+  YIELD: ["Venus: lend"],
 };
 
-export async function getRealAgentsAsMockShape(): Promise<MockAgent[]> {
+export async function getRealAgents(): Promise<AgentView[]> {
   const [agents, firstSnapshots] = await Promise.all([
     prisma.agent.findMany({
       include: {
@@ -65,6 +65,6 @@ export async function getRealAgentsAsMockShape(): Promise<MockAgent[]> {
         permissions: CATEGORY_PERMISSIONS[a.category] ?? [],
         spendCapDaily: 250, // default proposed cap shown before a session is granted, the real enforced cap lives in the Session row once hired
         walletAddress: a.walletAddress,
-      } satisfies MockAgent;
+      } satisfies AgentView;
     });
 }

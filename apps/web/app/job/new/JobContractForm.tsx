@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { guessCategoryFromObjective, type Category } from "../../lib/mockData";
+import { guessCategoryFromObjective, type Category } from "../../lib/catalog";
 import { useAltanaWallet } from "../../lib/useAltanaWallet";
 
 export function JobContractForm({

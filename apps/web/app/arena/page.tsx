@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "../lib/mockData";
+import { CATEGORY_LABELS, CATEGORY_ORDER, type Category } from "../lib/catalog";
 import { getAllAgents } from "../lib/agents";
 
 // Same reasoning as categories/page.tsx, read live, never bake in a
@@ -13,11 +13,22 @@ export const dynamic = "force-dynamic";
 // run under matched capital/timing/market conditions. Framed honestly as
 // that until the scenario runner is real, rather than claiming a
 // standardization that doesn't exist yet.
-const METRIC_LABEL: Record<string, string> = {
-  REBALANCING: "Net yield vs. baseline",
-  GRID: "Realized PnL",
-  YIELD: "Net yield vs. passive baseline",
-  HEALTH_FACTOR: "Reaction time to risk",
+// One metric per category, and each column only ever shows its own
+// metric. A category whose metric isn't measured yet says so rather than
+// borrowing another field (Grid's response time must never appear under
+// "Realized PnL").
+type ArenaAgent = Awaited<ReturnType<typeof getAllAgents>>[number];
+
+const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+
+const METRIC: Record<Category, { label: string; value: (agent: ArenaAgent) => string | null }> = {
+  REBALANCING: { label: "Net yield vs. baseline", value: (a) => (a.netYieldPct != null ? formatPct(a.netYieldPct) : null) },
+  GRID: { label: "Realized PnL", value: (a) => (a.netYieldPct != null ? formatPct(a.netYieldPct) : null) },
+  YIELD: { label: "Net yield vs. passive baseline", value: (a) => (a.netYieldPct != null ? formatPct(a.netYieldPct) : null) },
+  HEALTH_FACTOR: {
+    label: "Detection to confirmed tx",
+    value: (a) => (a.avgReactionTimeSec > 0 ? `${a.avgReactionTimeSec.toFixed(1)}s` : null),
+  },
 };
 
 export default async function ArenaPage() {
@@ -49,7 +60,7 @@ export default async function ArenaPage() {
                     <tr>
                       <th className="text-left px-4 py-2">Rank</th>
                       <th className="text-left px-4 py-2">Agent</th>
-                      <th className="text-left px-4 py-2">{METRIC_LABEL[category]}</th>
+                      <th className="text-left px-4 py-2">{METRIC[category].label}</th>
                       <th className="text-left px-4 py-2">Confidence</th>
                     </tr>
                   </thead>
@@ -66,11 +77,7 @@ export default async function ArenaPage() {
                           </Link>
                         </td>
                         <td className="px-4 py-3 mono-nums text-accent">
-                          {agent.netYieldPct != null
-                            ? `+${agent.netYieldPct.toFixed(1)}%`
-                            : agent.avgReactionTimeSec > 0
-                              ? `${agent.avgReactionTimeSec.toFixed(1)}s`
-                              : "(not yet measured)"}
+                          {METRIC[category].value(agent) ?? "(not yet measured)"}
                         </td>
                         <td className="px-4 py-3 mono-nums">{agent.confidenceScore}</td>
                       </tr>

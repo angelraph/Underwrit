@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Address, Hex } from "viem";
 import { formatEther } from "viem";
-import type { MockAgent } from "../lib/mockData";
+import type { AgentView } from "../lib/catalog";
 import { getAltanaClient, BNB_TESTNET } from "../lib/altana";
 import { useAltanaWallet } from "../lib/useAltanaWallet";
 
@@ -28,7 +28,7 @@ function bscTestnetTxUrl(hash: string): string {
   return `https://testnet.bscscan.com/tx/${hash}`;
 }
 
-export function HiresList({ sessions, agents }: { sessions: RealSession[]; agents: MockAgent[] }) {
+export function HiresList({ sessions, agents }: { sessions: RealSession[]; agents: AgentView[] }) {
   const { address, getSigner } = useAltanaWallet();
   const [revoking, setRevoking] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});

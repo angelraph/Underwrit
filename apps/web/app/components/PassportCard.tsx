@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { MockAgent } from "../lib/mockData";
+import { formatBnb, type AgentView } from "../lib/catalog";
 import { RiskBadge } from "./RiskBadge";
 
 /**
@@ -7,7 +7,7 @@ import { RiskBadge } from "./RiskBadge";
  * is meant to trace back to a real Action row once wired to @underwrit/db;
  * this component only formats, it never invents numbers.
  */
-export function PassportCard({ agent, showHire = true }: { agent: MockAgent; showHire?: boolean }) {
+export function PassportCard({ agent, showHire = true }: { agent: AgentView; showHire?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
@@ -38,14 +38,14 @@ export function PassportCard({ agent, showHire = true }: { agent: MockAgent; sho
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <Stat label="Observed over" value={`${agent.daysObserved} days`} />
-        <Stat label="Capital tested" value={`$${agent.capitalTested.toLocaleString()}`} />
+        <Stat label="Capital tested" value={formatBnb(agent.capitalTested)} />
         <Stat
           label="Actions"
           value={`${agent.actionsSucceeded}/${agent.actionsExecuted} succeeded`}
         />
-        <Stat label="Avg cost" value={`$${agent.avgCost.toFixed(3)}`} />
+        <Stat label="Avg gas" value={formatBnb(agent.avgCost)} />
         <Stat
-          label="Avg reaction"
+          label="Avg response"
           value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
         />
         {agent.netYieldPct != null && (

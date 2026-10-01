@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Address } from "viem";
 import { getAgentById } from "../../../lib/agents";
+import { formatBnb } from "../../../lib/catalog";
 import {
   runHealthFactorTrial,
   runYieldTrial,
@@ -160,10 +161,10 @@ export default async function TrialPage({
             </div>
           </div>
           <div>
-            <div className="text-muted text-xs">Est. total cost</div>
+            <div className="text-muted text-xs">Est. total gas</div>
             <div className="mono-nums text-lg">
               {effectiveDays > 0
-                ? `$${(agent.avgCost * Math.round((agent.actionsExecuted / effectiveDays) * 14)).toFixed(2)}`
+                ? formatBnb(agent.avgCost * Math.round((agent.actionsExecuted / effectiveDays) * 14))
                 : "not yet measured"}
             </div>
           </div>

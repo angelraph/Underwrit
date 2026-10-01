@@ -30,7 +30,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 **Do:** Click into the top-ranked agent, ideally Health Factor Guardian, since it has the clearest before/after story (a real forced at-risk check that triggered a real repay).
 
-**Say:** "This is the Performance Passport. Confidence score, capital actually tested, actions executed and their success rate, average cost, net yield where it applies. Every one of these numbers traces back to a real on-chain transaction hash, not a count, not a synthetic figure."
+**Say:** "This is the Performance Passport. Confidence score, capital actually tested in BNB, actions executed and their success rate, average gas per action, net yield where it applies, and, once the agent has acted since we started timing it, how long it took from spotting the condition to a confirmed transaction. Every one of these numbers traces back to a real on-chain transaction hash, not a count, not a synthetic figure."
 
 **Do:** Point out the "live Nd" note next to the network/source line (e.g. "Testnet · Reference agent · live 15d").
 

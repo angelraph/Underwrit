@@ -3,7 +3,7 @@ import {
   CATEGORY_DESCRIPTIONS,
   CATEGORY_LABELS,
   CATEGORY_ORDER,
-} from "./lib/mockData";
+} from "./lib/catalog";
 
 export default function HomePage() {
   return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAdvantageTasks } from "../lib/advantageReport";
-import { CATEGORY_LABELS, type Category } from "../lib/mockData";
+import { CATEGORY_LABELS, type Category } from "../lib/catalog";
 
 export const dynamic = "force-dynamic";
 

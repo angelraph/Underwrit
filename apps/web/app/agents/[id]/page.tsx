@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@underwrit/db";
-import { CATEGORY_LABELS } from "../../lib/mockData";
+import { CATEGORY_LABELS, formatBnb } from "../../lib/catalog";
 import { getAgentById } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
@@ -15,10 +15,9 @@ export default async function AgentPassportPage({
   if (!agent) notFound();
 
   // Real counterfactual, if this is a DB-backed agent with one recorded
-  // (see packages/db/scripts/syncHealthFactorGuardian.ts). Mock agents (and
-  // real agents with no counterfactual yet) fall through to null and the
-  // section below shows an honest "not yet available" state instead of a
-  // fabricated number.
+  // (see packages/db/scripts/syncHealthFactorGuardian.ts). Agents with no
+  // counterfactual yet fall through to null and the section below shows an
+  // honest "not yet available" state instead of a fabricated number.
   let counterfactual: {
     baselineScenario: string;
     baselineOutcome: number;
@@ -56,7 +55,7 @@ export default async function AgentPassportPage({
           label="Success rate"
           value={`${Math.round((agent.actionsSucceeded / agent.actionsExecuted) * 100)}%`}
         />
-        <BigStat label="Capital tested" value={`$${agent.capitalTested.toLocaleString()}`} />
+        <BigStat label="Capital tested" value={formatBnb(agent.capitalTested)} />
       </div>
 
       <section className="mt-10">
@@ -67,9 +66,9 @@ export default async function AgentPassportPage({
           <Stat label="Actions executed" value={String(agent.actionsExecuted)} />
           <Stat label="Successful" value={String(agent.actionsSucceeded)} />
           <Stat label="Failed" value={String(agent.actionsFailed)} />
-          <Stat label="Average execution cost" value={`$${agent.avgCost.toFixed(3)}`} />
+          <Stat label="Average gas per action" value={formatBnb(agent.avgCost)} />
           <Stat
-            label="Average reaction time"
+            label="Detection to confirmed tx"
             value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
           />
           {agent.netYieldPct != null && (

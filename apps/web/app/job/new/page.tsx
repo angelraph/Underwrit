@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "../../lib/mockData";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "../../lib/catalog";
 import { JobContractForm } from "./JobContractForm";
 
 export default async function NewJobPage({
