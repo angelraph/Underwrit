@@ -8,3 +8,8 @@
 # Node (also caught by the workspace root gitignore; duplicated for clarity)
 node_modules/
 dist/
+
+# Local record of broadcast txs, read by packages/db/scripts/sync*.ts.
+# Every hash in it is public on-chain; it's ignored only because it's
+# machine state, not source.
+action-journal.jsonl

@@ -12,6 +12,7 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
 import {
   ActionResult,
   AgentSource,
@@ -117,13 +118,16 @@ async function main() {
     );
   }
 
+  await syncJournal(client, agent.id, journalPathFor("healthfactormonitor"));
+  await reportCoverage(client, agent.id, AGENT_WALLET);
+
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
   const snapshot = computeEvidenceSnapshot(
     actions.map((a) => ({
       timestamp: a.timestamp,
       result: a.result,
       gasCost: a.gasCost,
-      latencyMs: null,
+      latencyMs: a.latencyMs,
       paramsJson: a.paramsJson as Record<string, unknown>,
     })),
     { network: "TESTNET" },
@@ -138,11 +142,11 @@ async function main() {
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
       netYieldPct: null,
       worstDrawdownPct: null,
-      // Venus's own price oracle reported ~$24 of borrowing capacity against
-      // the 0.05 BNB collateral supplied (see seedPosition.ts console output,
-      // Comptroller.getAccountLiquidity), an on-chain-sourced figure, not an
-      // estimate we invented.
-      capitalTested: 24,
+      // The 0.05 BNB supplied to vBNB as collateral (tx 0x96f651f8, value
+      // re-checked on-chain 2026-10-01). In BNB like the other three agents'
+      // capitalTested; this used to be the ~$24 of borrowing capacity Venus
+      // reported against it, which the UI then mixed with BNB figures.
+      capitalTested: 0.05,
       daysObserved: snapshot.daysObserved,
       actionsExecuted: snapshot.actionsExecuted,
       actionsSucceeded: snapshot.actionsSucceeded,

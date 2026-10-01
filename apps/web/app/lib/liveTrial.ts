@@ -213,7 +213,9 @@ export interface GridTrial {
   reasoning: string;
 }
 
-const GRID_CENTER_TICK = 190000;
+// Must match GRID_CENTER_TICK in apps/agents/gridtrading/app/agent/src/
+// gridTradingCore.ts (re-anchored from 190000 on 2026-10-01, see there).
+const GRID_CENTER_TICK = 195300;
 const LEVEL_SPACING_TICKS = 500;
 const N_LEVELS = 5;
 

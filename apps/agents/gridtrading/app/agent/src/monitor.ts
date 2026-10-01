@@ -15,6 +15,7 @@ import {
   getWallet,
 } from "@bnbagent/studio-runtime/wallet";
 import { checkAndTrade } from "./gridTradingCore.js";
+import { recordAction } from "./actionJournal.js";
 
 async function main(): Promise<void> {
   ensureKeystoreMaterialized();
@@ -27,7 +28,17 @@ async function main(): Promise<void> {
   const result = await checkAndTrade();
   console.log(JSON.stringify(result, null, 2));
 
-  if (result.actionTaken) {
+  if (result.actionTaken && result.action) {
+    recordAction({
+      action: result.action.type,
+      detectedAt: result.timestamp,
+      legs: result.action.txHashes.map((hash) => ({ hash })),
+      params: {
+        level: result.level,
+        targetWbnbFraction: result.targetWbnbFraction,
+        actualWbnbFraction: result.actualWbnbFraction,
+      },
+    });
     console.log(`[gridtrading] ACTED, ${result.action?.type}, tx(s) ${result.action?.txHashes.join(", ")}`);
   } else {
     console.log(`[gridtrading] no action: ${result.skippedReason ?? "within deadband"}`);

@@ -21,6 +21,7 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
 import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
 import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
@@ -161,13 +162,16 @@ async function main() {
     console.log(`  synced ${a.type}, tx ${a.hash.slice(0, 10)}… gas ${gasCostBnb.toFixed(6)} BNB, block ${receipt.blockNumber}`);
   }
 
+  await syncJournal(client, agent.id, journalPathFor("rebalancer"));
+  await reportCoverage(client, agent.id, AGENT_WALLET);
+
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
   const snapshot = computeEvidenceSnapshot(
     actions.map((a) => ({
       timestamp: a.timestamp,
       result: a.result,
       gasCost: a.gasCost,
-      latencyMs: null,
+      latencyMs: a.latencyMs,
       paramsJson: a.paramsJson as Record<string, unknown>,
     })),
     { network: "TESTNET" },

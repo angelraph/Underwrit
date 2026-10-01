@@ -15,6 +15,7 @@ import {
   getWallet,
 } from "@bnbagent/studio-runtime/wallet";
 import { checkAndRebalance } from "./rebalancerCore.js";
+import { recordAction } from "./actionJournal.js";
 
 async function main(): Promise<void> {
   ensureKeystoreMaterialized();
@@ -27,7 +28,13 @@ async function main(): Promise<void> {
   const result = await checkAndRebalance();
   console.log(JSON.stringify(result, null, 2));
 
-  if (result.actionTaken) {
+  if (result.actionTaken && result.action) {
+    recordAction({
+      action: result.action.type,
+      detectedAt: result.timestamp,
+      legs: result.action.txHashes.map((hash) => ({ hash })),
+      params: { tokenId: result.action.tokenId, poolTick: result.poolTick },
+    });
     console.log(`[rebalancer] ACTED, ${result.action?.type}, tokenId ${result.action?.tokenId}, tx(s) ${result.action?.txHashes.join(", ")}`);
   } else {
     console.log(`[rebalancer] no action: ${result.skippedReason ?? "already in range"}`);

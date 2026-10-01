@@ -8,6 +8,7 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
 import {
   ActionResult,
   AgentSource,
@@ -89,13 +90,16 @@ async function main() {
     );
   }
 
+  await syncJournal(client, agent.id, journalPathFor("yieldrouter"));
+  await reportCoverage(client, agent.id, AGENT_WALLET);
+
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
   const snapshot = computeEvidenceSnapshot(
     actions.map((a) => ({
       timestamp: a.timestamp,
       result: a.result,
       gasCost: a.gasCost,
-      latencyMs: null,
+      latencyMs: a.latencyMs,
       paramsJson: a.paramsJson as Record<string, unknown>,
     })),
     { network: "TESTNET" },

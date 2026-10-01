@@ -46,10 +46,17 @@ import {
   type PoolState,
 } from "./pancake.js";
 
-// Anchored to the pool's real tick at build time (~190104, 2026-08-14),
-// a fixed ladder, not re-centered on "current tick" each run (that would
+// A fixed ladder, not re-centered on "current tick" each run (that would
 // make the grid chase price instead of trading against it).
-const GRID_CENTER_TICK = 190000;
+//
+// First anchored at 190000 (pool tick ~190104, 2026-08-14). By late
+// September the pool had climbed past the top of that band (tick ~195266
+// on 2026-10-01, level clamped at +5.00), leaving the agent 100% USDT with
+// nothing left to trade in either direction. Re-anchored by hand to the
+// pool's tick that day, the same way the first anchor was chosen. This is
+// an operator decision recorded here, not something the agent does to
+// itself.
+const GRID_CENTER_TICK = 195300;
 const LEVEL_SPACING_TICKS = 500; // ~5% per level, consistent with the Rebalancer's chosen granularity
 const N_LEVELS = 5; // band = center ± 2500 ticks (~±22%), wide given this thin pool's observed volatility
 

@@ -20,6 +20,7 @@ import {
   getWallet,
 } from "@bnbagent/studio-runtime/wallet";
 import { checkAndProtect } from "./healthFactorGuard.js";
+import { recordAction } from "./actionJournal.js";
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -39,7 +40,16 @@ async function main(): Promise<void> {
   const result = await checkAndProtect({ safetyBufferUsd });
   console.log(JSON.stringify(result, null, 2));
 
-  if (result.actionTaken) {
+  if (result.actionTaken && result.action) {
+    recordAction({
+      action: result.action.type,
+      detectedAt: result.timestamp,
+      legs: [
+        ...(result.action.approveTxHash ? [{ hash: result.action.approveTxHash, type: "approve_repay" }] : []),
+        { hash: result.action.repayTxHash, type: "repay" },
+      ],
+      params: { protocol: "venus", tier: result.tier, amountRaw: result.action.amountRaw },
+    });
     console.log(`[guardian] ACTED, ${result.tier} → repaid, tx ${result.action?.repayTxHash}`);
   } else if (result.tier === "AT_RISK" || result.tier === "UNDERWATER") {
     console.log(`[guardian] ${result.tier} but took no action: ${result.skippedReason ?? "unknown reason"}`);

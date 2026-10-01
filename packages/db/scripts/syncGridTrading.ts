@@ -20,6 +20,7 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
 import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
 import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
@@ -29,6 +30,28 @@ const ERC8004_AGENT_ID = "1839"; // real BEP-721 tokenId, self-registered; see r
 const CHAIN_ID = 97; // BSC Testnet
 
 const KNOWN_ACTIONS = [
+  // Nonces 0 to 2, the agent's very first run on 2026-08-14. Real and
+  // confirmed (re-checked 2026-10-01: sent from AGENT_WALLET, status
+  // success), but left out of this list until then.
+  {
+    hash: "0x23b222fba54a9ad4819b196ba45a0efeffdb4386b24b784eeb2df01213cf69be",
+    type: "wrap_native",
+    params: { token: "WBNB", note: "first run: wrapped native BNB so the grid could hold a WBNB/USDT split" },
+  },
+  {
+    hash: "0xda4afcd4ee4940241c3e4d6d3d0e8e355d164d0981d563a797c0f1e295cc113c",
+    type: "approve",
+    params: { protocol: "pancakeswap-v3", token: "WBNB", spender: "SmartRouter", purpose: "grid rebalance sell" },
+  },
+  {
+    hash: "0x47cb9a9da4882792c756afdcd100f7144bc037f2a2e13c211222165775039550",
+    type: "sell_wbnb",
+    params: {
+      protocol: "pancakeswap-v3",
+      pool: "WBNB/USDT 0.01%",
+      note: "first run: WBNB holdings sat above the level's target allocation, so sold WBNB into USDT",
+    },
+  },
   {
     hash: "0x5c5a19107f94ff84ae41933dba131bc20b6bb9cfd9ebbca2093a283d66b8be31",
     type: "approve",
@@ -98,13 +121,16 @@ async function main() {
     );
   }
 
+  await syncJournal(client, agent.id, journalPathFor("gridtrading"));
+  await reportCoverage(client, agent.id, AGENT_WALLET);
+
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
   const snapshot = computeEvidenceSnapshot(
     actions.map((a) => ({
       timestamp: a.timestamp,
       result: a.result,
       gasCost: a.gasCost,
-      latencyMs: null,
+      latencyMs: a.latencyMs,
       paramsJson: a.paramsJson as Record<string, unknown>,
     })),
     { network: "TESTNET" },

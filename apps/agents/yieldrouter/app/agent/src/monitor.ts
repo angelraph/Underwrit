@@ -15,6 +15,7 @@ import {
   getWallet,
 } from "@bnbagent/studio-runtime/wallet";
 import { checkAndOptimize } from "./yieldRouterCore.js";
+import { recordAction } from "./actionJournal.js";
 
 async function main(): Promise<void> {
   ensureKeystoreMaterialized();
@@ -27,7 +28,13 @@ async function main(): Promise<void> {
   const result = await checkAndOptimize();
   console.log(JSON.stringify(result, null, 2));
 
-  if (result.actionTaken) {
+  if (result.actionTaken && result.action) {
+    recordAction({
+      action: result.action.type,
+      detectedAt: result.timestamp,
+      legs: [{ hash: result.action.txHash, type: "supply_bnb" }],
+      params: { protocol: "venus", market: result.bestMarket, amountRaw: result.action.amountRaw },
+    });
     console.log(`[yield-router] ACTED, supplied to ${result.bestMarket}, tx ${result.action?.txHash}`);
   } else {
     console.log(`[yield-router] no action: ${result.skippedReason ?? "already optimally allocated"}`);
