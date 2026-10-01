@@ -61,6 +61,9 @@ const decodeAbi = parseAbi([
   "function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96) params)",
   "function mint((address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, address recipient, uint256 deadline) params)",
   "function increaseLiquidity((uint256 tokenId, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, uint256 deadline) params)",
+  // Classic Uniswap V3 SwapRouter shape (with a deadline field). SmartRouter
+  // doesn't accept it; the Rebalancer's very first tx used it and reverted.
+  "function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96) params)",
   "function decreaseLiquidity((uint256 tokenId, uint128 liquidity, uint256 amount0Min, uint256 amount1Min, uint256 deadline) params)",
   "function repayBorrow(uint256 repayAmount)",
   "function borrow(uint256 borrowAmount)",
@@ -103,6 +106,14 @@ export function labelTransaction(tx: Pick<Transaction, "to" | "input">, fallback
 
   if (decoded.functionName === "deposit" && same(tx.to, PANCAKESWAP_V3_TESTNET.WBNB)) {
     return { type: "wrap_native", params: { token: "WBNB" } };
+  }
+
+  if (same(tx.to, PANCAKESWAP_V3_TESTNET.smartRouter) && decoded.functionName === "exactInputSingle") {
+    const p = (decoded.args as readonly [{ tokenIn: string; tokenOut: string; amountIn: bigint }])[0];
+    return {
+      type: `swap_${symbolOf(p.tokenIn).toLowerCase()}_to_${symbolOf(p.tokenOut).toLowerCase()}`,
+      params: { protocol: "pancakeswap-v3", tokenIn: symbolOf(p.tokenIn), tokenOut: symbolOf(p.tokenOut), amountIn: p.amountIn.toString(), calledDirectly: true },
+    };
   }
 
   if (same(tx.to, PANCAKESWAP_V3_TESTNET.smartRouter) && decoded.functionName === "multicall") {

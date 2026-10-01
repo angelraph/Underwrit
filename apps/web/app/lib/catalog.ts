@@ -155,7 +155,7 @@ export function formatSignedPct(pct: number): string {
 /** Counterfactual amounts: BNB figures are small, so keep significant digits rather than two decimals. */
 export function formatOutcome(value: number, unit: string, signed = false): string {
   const sign = signed && value >= 0 ? "+" : "";
-  const n = unit === "BNB" ? value.toLocaleString("en-US", { maximumSignificantDigits: 3 }) : value.toFixed(2);
+  const n = unit === "BNB" ? value.toLocaleString("en-US", { maximumSignificantDigits: 4 }) : value.toFixed(2);
   return `${sign}${n} ${unit}`;
 }
 

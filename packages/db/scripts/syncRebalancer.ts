@@ -49,7 +49,7 @@ const nfpmOwnerAbi = parseAbi([
 const KNOWN_ACTIONS = [
   {
     hash: "0x7566d2ff16e78a27725f82897a1a531e8d75700a8352ef85ff60e1b9b31c270c",
-    type: "swap_bnb_to_usdt",
+    type: "swap_wbnb_to_usdt",
     params: { protocol: "pancakeswap-v3", pool: "WBNB/USDT 0.01%", amountIn: "0.065 BNB", note: "initial open, naive 50/50 split" },
   },
   {

@@ -30,7 +30,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 
 **Do:** Click into the top-ranked agent, ideally Health Factor Guardian, since it has the clearest before/after story (a real forced at-risk check that triggered a real repay).
 
-**Say:** "This is the Performance Passport. Confidence score, capital actually tested in BNB, actions executed and their success rate, average gas per action, net yield where it applies, and, once the agent has acted since we started timing it, how long it took from spotting the condition to a confirmed transaction. Every one of these numbers traces back to a real on-chain transaction hash, not a count, not a synthetic figure."
+**Say:** "This is the Performance Passport. Confidence score, capital actually tested in BNB, actions executed and their success rate, average gas per action, its result against doing nothing, and, once the agent has acted since we started timing it, how long it took from spotting the condition to a confirmed transaction. Every one of these numbers traces back to a real on-chain transaction hash, not a count, not a synthetic figure."
 
 **Do:** Point out the "live Nd" note next to the network/source line (e.g. "Testnet · Reference agent · live 15d").
 
@@ -75,7 +75,7 @@ Practice this out loud at least twice before submission day. Times below are cum
 Pick whichever of these best fits the remaining time and the judges in the room:
 
 - **Discover (`/discover`)**: "This is the other half of the 200,000-agent problem: real third-party agents pulled live from 8004scan, clearly labeled as third-party evidence, never blended with our own."
-- **Arena (`/arena`)**: "Every one of our four agents ranked on its own real evidence, side by side."
+- **Arena (`/arena`)**: "Every agent measured against the same do-nothing baseline for its category, both sides priced at the same block and re-measured every six hours. Grid Trading is ahead of just holding. Our own Rebalancer is behind leaving its first range alone, and the Arena says so."
 - **Opportunities (`/opportunities`)**: "Live PancakeSwap pool data across all four fee tiers, recommending the Rebalancer agent where there's a real signal."
 - **Advantage Report (`/advantage-report`)**: "Auto-generated from real logged Action data, agent-assisted outcome versus a labeled, methodology-shown manual estimate. This is the TermiX track's real-task requirement, not three examples written by hand."
 
@@ -102,6 +102,7 @@ The Hire click triggers a genuine WebAuthn passkey ceremony (no seed phrase, no 
 ## Likely judge questions, answered honestly
 
 - **"Is this all testnet?"** Yes, all four reference agents run on BSC Testnet by design (free to iterate, safe to fail during the build window); the architecture and evidence model both carry a `network` field and are built to grade mainnet evidence higher once agents graduate. Nothing here pretends to be mainnet.
-- **"What happens if I ask for a category you don't have evidence for yet?"** Rebalancing and Grid Trading are both honestly labeled "counterfactual not yet available" rather than showing a fabricated number. The testnet pools genuinely haven't accrued third-party fee volume yet.
+- **"Does Underwrit ever make its own agents look bad?"** Yes. Open the Rebalancer's passport: from Sep 1 to Sep 11 a bug crashed it right after approving tokens on almost every run. Those 52 approvals succeeded on-chain but did nothing, so they're counted as failures, which is why its success rate is 53%, not 99%. And its counterfactual is negative: managing the range has left it with less than leaving the first position alone would have. That's the point of evidence over profiles.
+- **"Where does the history come from?"** Every transaction each agent wallet ever sent, found by reading the wallet's nonce at past blocks through free public archive endpoints, then labelled from its own calldata. Nothing is typed in by hand, and each passport's action log links every tx to BscScan.
 - **"Who's actually running these agents right now?"** A scheduled task on the builder's machine re-runs all four agents' monitors every 6 hours and re-syncs evidence. Say so plainly if asked, it's a real (if honestly-scoped) answer, not evasive.
 - **"Is the ERC-8183 / x402 bonus work real?"** Yes, verified end-to-end 2026-09-12: a real ERC-8183 hire (job funded in $U against one of our own agent's wallets) and a real paid x402 round-trip against the live sell endpoint, both with settlement tx hashes independently confirmed on BSC Testnet. See `docs/altana-u-token-request.md` for the exact hashes.

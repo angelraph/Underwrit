@@ -34,6 +34,12 @@ export default async function AgentPassportPage({
     // DB unreachable, leave counterfactual null, page still renders.
   }
 
+  const actions = await prisma.action.findMany({
+    where: { agentId: agent.id },
+    orderBy: { timestamp: "desc" },
+    select: { id: true, timestamp: true, actionType: true, txHash: true, gasCost: true, result: true, latencyMs: true, paramsJson: true },
+  });
+
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
       <div className="text-sm text-muted">
@@ -107,7 +113,7 @@ export default async function AgentPassportPage({
               </div>
               <div>
                 <div className="text-muted text-xs">Value created</div>
-                <div className="mono-nums text-lg text-accent">
+                <div className={`mono-nums text-lg ${counterfactual.valueCreated < 0 ? "text-risk-high" : "text-accent"}`}>
                   {formatOutcome(counterfactual.valueCreated, counterfactual.unit, true)}
                 </div>
               </div>
@@ -118,6 +124,30 @@ export default async function AgentPassportPage({
             No counterfactual recorded yet. This agent hasn&apos;t taken a
             protective action with a measured baseline comparison.
           </p>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-medium text-muted uppercase tracking-wide">
+          Action log
+        </h2>
+        <p className="mt-2 text-sm text-muted">
+          Every transaction this agent has sent, newest first. Each one opens on BscScan Testnet.
+        </p>
+        {actions.length > 0 ? (
+          <>
+            <ActionTable actions={actions.slice(0, 15)} />
+            {actions.length > 15 && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm text-muted hover:text-accent">
+                  Show the other {actions.length - 15}
+                </summary>
+                <ActionTable actions={actions.slice(15)} />
+              </details>
+            )}
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-muted">No actions recorded yet.</p>
         )}
       </section>
 
@@ -155,6 +185,73 @@ export default async function AgentPassportPage({
           Hire Agent
         </Link>
       </div>
+    </div>
+  );
+}
+
+type ActionRow = {
+  id: string;
+  timestamp: Date;
+  actionType: string;
+  txHash: string;
+  gasCost: number | null;
+  result: "SUCCESS" | "FAIL";
+  latencyMs: number | null;
+  paramsJson: unknown;
+};
+
+function outcomeOf(a: ActionRow): { text: string; className: string } {
+  if (a.result === "SUCCESS") return { text: "succeeded", className: "text-risk-low" };
+  const params = (a.paramsJson ?? {}) as Record<string, unknown>;
+  if (params.abandoned) return { text: "unused approval", className: "text-risk-moderate" };
+  return { text: "failed", className: "text-risk-high" };
+}
+
+function ActionTable({ actions }: { actions: ActionRow[] }) {
+  return (
+    <div className="mt-3 overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-sm">
+        <thead className="bg-surface-raised text-muted text-xs uppercase tracking-wide">
+          <tr>
+            <th className="text-left px-3 py-2">When (UTC)</th>
+            <th className="text-left px-3 py-2">Action</th>
+            <th className="text-left px-3 py-2">Outcome</th>
+            <th className="text-left px-3 py-2">Gas</th>
+            <th className="text-left px-3 py-2">Tx</th>
+          </tr>
+        </thead>
+        <tbody>
+          {actions.map((a) => {
+            const outcome = outcomeOf(a);
+            const note = ((a.paramsJson ?? {}) as Record<string, unknown>).note;
+            return (
+              <tr key={a.id} className="border-t border-border" title={typeof note === "string" ? note : undefined}>
+                <td className="px-3 py-2 mono-nums whitespace-nowrap text-muted">
+                  {a.timestamp.toISOString().slice(0, 16).replace("T", " ")}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  {a.actionType.replaceAll("_", " ")}
+                  {a.latencyMs != null && (
+                    <span className="text-muted"> · {(a.latencyMs / 1000).toFixed(1)}s</span>
+                  )}
+                </td>
+                <td className={`px-3 py-2 whitespace-nowrap ${outcome.className}`}>{outcome.text}</td>
+                <td className="px-3 py-2 mono-nums whitespace-nowrap">{a.gasCost != null ? formatBnb(a.gasCost) : "n/a"}</td>
+                <td className="px-3 py-2">
+                  <a
+                    href={`https://testnet.bscscan.com/tx/${a.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mono-nums underline hover:text-accent"
+                  >
+                    {a.txHash.slice(0, 10)}…
+                  </a>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

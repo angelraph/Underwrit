@@ -152,12 +152,17 @@ function CategoryTable({
                 </td>
                 {arena ? (
                   <>
-                    <td className="px-4 py-3 mono-nums text-accent">{formatSignedPct(arena.latest.vsBaselinePct)}</td>
+                    <td className={`px-4 py-3 mono-nums ${arena.latest.vsBaselinePct < 0 ? "text-risk-high" : "text-accent"}`}>
+                      {formatSignedPct(arena.latest.vsBaselinePct)}
+                    </td>
                     <td className="px-4 py-3 mono-nums whitespace-nowrap">
                       {formatOutcome(arena.latest.actualBnb, "BNB")} / {formatOutcome(arena.latest.baselineBnb, "BNB")}
                     </td>
                     <td className="px-4 py-3 text-muted whitespace-nowrap">
-                      {arena.count} since {since(arena.firstAt)}, latest {since(arena.latestAt)} (block {arena.latest.block})
+                      {arena.count === 1
+                        ? `1 so far, ${since(arena.latestAt)}`
+                        : `${arena.count}, first ${since(arena.firstAt)}, latest ${since(arena.latestAt)}`}{" "}
+                      (block {arena.latest.block})
                     </td>
                   </>
                 ) : (
