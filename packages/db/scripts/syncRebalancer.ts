@@ -19,16 +19,32 @@
  * is idempotent: it skips any tx hash already present in the Action table.
  */
 
-import { createPublicClient, formatEther, http } from "viem";
+import { createPublicClient, formatEther, http, parseAbi } from "viem";
+import { PANCAKESWAP_V3_TESTNET } from "@underwrit/chain";
 import { bscTestnet } from "viem/chains";
+import { markAbandonedApprovals } from "./lib/abandonedApprovals";
 import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
+import { recordArenaRun } from "./lib/arena";
+import { positionAmounts, readHoldings, readPosition, valueInBnb } from "./lib/portfolio";
+import { archiveClient, syncWalletHistory } from "./lib/walletHistory";
 import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
-import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
+import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
 const AGENT_WALLET = "0x04E47e45A095E1edA69B0007d75aE55eE9320e75";
 const OWNER_WALLET = "0x9Ffe8BF12437D30dC0BB321EE9Ad76b488F664FB"; // human owner (angelraphael.bnb)
 const ERC8004_AGENT_ID = "1819"; // registered gaslessly via `bag deploy verify` this session, BSC Testnet identity registry
 const CHAIN_ID = 97; // BSC Testnet
+
+// The agent's first open (position #36829) and the tx that later removed
+// it: the "left unmanaged" baseline is that position as it stood.
+const FIRST_POSITION_ID = 36829n;
+const FIRST_OPEN_MINT_TX = "0xc9a5a0dc6949d6bfca8e5dd581875939d89f0f258df3bb222351addf12bb85d0";
+const FIRST_POSITION_REMOVE_TX = "0xe4d5065bb9f95986951b4b4b734163a371c8b99e8743f3a1ad75fdfc859dfee5";
+
+const nfpmOwnerAbi = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
+]);
 
 const KNOWN_ACTIONS = [
   {
@@ -163,6 +179,8 @@ async function main() {
   }
 
   await syncJournal(client, agent.id, journalPathFor("rebalancer"));
+  await syncWalletHistory(agent.id, AGENT_WALLET, { full: process.argv.includes("--full") });
+  await markAbandonedApprovals(agent.id);
   await reportCoverage(client, agent.id, AGENT_WALLET);
 
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
@@ -177,6 +195,42 @@ async function main() {
     { network: "TESTNET" },
   );
 
+  // Managed vs. unmanaged, both at today's pool price: what the wallet
+  // holds now (idle tokens plus every position it owns, closed out at the
+  // current tick, fees owed included) against what it would hold had the
+  // agent stopped right after its first open, i.e. that first position
+  // (#36829) left alone plus whatever sat idle beside it. Checked
+  // 2026-10-01 that every USDT/WBNB transfer into this wallet came from the
+  // pool, router or position manager, so no outside top-up skews it.
+  const archive = archiveClient();
+  let managed: { baseline: number; actual: number; block: bigint } | null = null;
+  {
+    const block = await archive.getBlockNumber();
+    const firstMint = await archive.getTransactionReceipt({ hash: FIRST_OPEN_MINT_TX });
+    const firstRemove = await archive.getTransactionReceipt({ hash: FIRST_POSITION_REMOVE_TX });
+    const [afterOpen, firstPosition, now] = await Promise.all([
+      readHoldings(archive, AGENT_WALLET, firstMint.blockNumber),
+      readPosition(archive, FIRST_POSITION_ID, firstRemove.blockNumber - 1n),
+      readHoldings(archive, AGENT_WALLET, block),
+    ]);
+    const owned = await archive.readContract({ address: PANCAKESWAP_V3_TESTNET.nonfungiblePositionManager, abi: nfpmOwnerAbi, functionName: "balanceOf", args: [AGENT_WALLET], blockNumber: block });
+    let positionsUsdt = 0;
+    let positionsWbnb = 0;
+    for (let i = 0n; i < owned; i++) {
+      const id = await archive.readContract({ address: PANCAKESWAP_V3_TESTNET.nonfungiblePositionManager, abi: nfpmOwnerAbi, functionName: "tokenOfOwnerByIndex", args: [AGENT_WALLET, i], blockNumber: block });
+      const amounts = positionAmounts(await readPosition(archive, id, block), now.tick);
+      positionsUsdt += amounts.usdt;
+      positionsWbnb += amounts.wbnb;
+    }
+    const left = positionAmounts(firstPosition, now.tick);
+    managed = {
+      baseline: valueInBnb({ native: afterOpen.native, wbnb: afterOpen.wbnb + left.wbnb, usdt: afterOpen.usdt + left.usdt }, now.usdtPerBnb),
+      actual: valueInBnb({ native: now.native, wbnb: now.wbnb + positionsWbnb, usdt: now.usdt + positionsUsdt }, now.usdtPerBnb),
+      block,
+    };
+    console.log(`  vs unmanaged: holds ${managed.actual.toFixed(4)} BNB now, first range left alone would hold ${managed.baseline.toFixed(4)} BNB`);
+  }
+
   await prisma.evidenceSnapshot.create({
     data: {
       agentId: agent.id,
@@ -184,7 +238,7 @@ async function main() {
       successRate: snapshot.successRate,
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
-      netYieldPct: null, // real trading-fee accrual needs an observation window we haven't had yet, not invented
+      netYieldPct: managed ? ((managed.actual - managed.baseline) / managed.baseline) * 100 : null, // vs. unmanaged, see above
       worstDrawdownPct: null,
       // Real BNB principal wrapped and deployed into the position (0.15
       // funded - 0.02 gas reserve).
@@ -197,13 +251,26 @@ async function main() {
   });
   console.log(`\nEvidence snapshot: confidence=${snapshot.confidenceScore} successRate=${(snapshot.successRate * 100).toFixed(0)}% actions=${snapshot.actionsExecuted}`);
 
-  // No Counterfactual row yet, deliberately: CATEGORY_BASELINES.REBALANCING
-  // ("held initial LP range unmanaged") is real and well-defined, but a
-  // trustworthy dollar value-created figure needs an actual observed
-  // fee-accrual window (in-range earning vs. the drifted position's zero
-  // fee-earning) that we haven't held long enough to measure yet. The UI
-  // already shows an honest "not yet available" state for this rather than
-  // a fabricated number, see apps/web/app/agents/[id]/page.tsx.
+  // Replaced every sync, since both sides move with price.
+  const latest = await prisma.action.findFirst({ where: { agentId: agent.id }, orderBy: { timestamp: "desc" } });
+  if (managed && latest) {
+    const cf = computeCounterfactual({
+      baselineScenario: CATEGORY_BASELINES.REBALANCING,
+      baselineOutcome: managed.baseline,
+      actualOutcome: managed.actual,
+    });
+    await prisma.$transaction([
+      prisma.counterfactual.deleteMany({ where: { action: { agentId: agent.id } } }),
+      prisma.counterfactual.create({ data: { actionId: latest.id, ...cf, unit: "BNB" } }),
+    ]);
+    console.log(`Counterfactual: "${cf.baselineScenario}", value created ${cf.valueCreated >= 0 ? "+" : ""}${cf.valueCreated.toFixed(4)} BNB`);
+    await recordArenaRun(agent.id, Category.REBALANCING, {
+      baselineBnb: managed.baseline,
+      actualBnb: managed.actual,
+      block: managed.block,
+      baseline: CATEGORY_BASELINES.REBALANCING,
+    });
+  }
 
   await prisma.$disconnect();
 }

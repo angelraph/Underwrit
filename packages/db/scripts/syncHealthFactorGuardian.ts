@@ -12,7 +12,9 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { markAbandonedApprovals } from "./lib/abandonedApprovals";
 import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
+import { syncWalletHistory } from "./lib/walletHistory";
 import {
   ActionResult,
   AgentSource,
@@ -119,6 +121,8 @@ async function main() {
   }
 
   await syncJournal(client, agent.id, journalPathFor("healthfactormonitor"));
+  await syncWalletHistory(agent.id, AGENT_WALLET, { full: process.argv.includes("--full") });
+  await markAbandonedApprovals(agent.id);
   await reportCoverage(client, agent.id, AGENT_WALLET);
 
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });

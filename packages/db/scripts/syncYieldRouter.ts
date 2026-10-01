@@ -6,9 +6,13 @@
  * Venus-supply-APY comparison and routing decision.
  */
 
-import { createPublicClient, formatEther, http } from "viem";
+import { createPublicClient, formatEther, http, parseAbi } from "viem";
+import { VENUS_TESTNET } from "@underwrit/chain";
 import { bscTestnet } from "viem/chains";
+import { markAbandonedApprovals } from "./lib/abandonedApprovals";
 import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
+import { recordArenaRun } from "./lib/arena";
+import { syncWalletHistory } from "./lib/walletHistory";
 import {
   ActionResult,
   AgentSource,
@@ -18,6 +22,11 @@ import {
   withDbRetry,
 } from "@underwrit/db";
 import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
+
+const vBnbAbi = parseAbi([
+  "function balanceOf(address owner) view returns (uint256)",
+  "function exchangeRateCurrent() returns (uint256)",
+]);
 
 const AGENT_WALLET = "0x2406b7d0Dbc0a501e39EbE9606Ae7a9bE258321e";
 const OWNER_WALLET = "0x9Ffe8BF12437D30dC0BB321EE9Ad76b488F664FB"; // human owner (angelraphael.bnb)
@@ -91,6 +100,8 @@ async function main() {
   }
 
   await syncJournal(client, agent.id, journalPathFor("yieldrouter"));
+  await syncWalletHistory(agent.id, AGENT_WALLET, { full: process.argv.includes("--full") });
+  await markAbandonedApprovals(agent.id);
   await reportCoverage(client, agent.id, AGENT_WALLET);
 
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
@@ -105,6 +116,35 @@ async function main() {
     { network: "TESTNET" },
   );
 
+  // What the agent has actually earned, not the APY quoted when it acted:
+  // every BNB it supplied (read from each supply tx's own value) against
+  // what its vBNB is redeemable for right now (exchangeRateCurrent,
+  // simulated so interest accrues up to this block). Annualized as simple
+  // interest over each deposit's own time in the market.
+  const supplies = await prisma.action.findMany({ where: { agentId: agent.id, actionType: "supply_bnb", result: "SUCCESS" } });
+  let earned: { supplied: number; worth: number; annualizedPct: number; block: bigint } | null = null;
+  if (supplies.length > 0) {
+    const now = Date.now();
+    let supplied = 0;
+    let bnbDays = 0;
+    for (const s of supplies) {
+      const tx = await client.getTransaction({ hash: s.txHash as `0x${string}` });
+      const amount = Number(formatEther(tx.value));
+      supplied += amount;
+      bnbDays += amount * ((now - s.timestamp.getTime()) / 86_400_000);
+    }
+    const block = await client.getBlockNumber();
+    const [vBnbBalance, rate] = await Promise.all([
+      client.readContract({ address: VENUS_TESTNET.vBNB, abi: vBnbAbi, functionName: "balanceOf", args: [AGENT_WALLET], blockNumber: block }),
+      client.simulateContract({ address: VENUS_TESTNET.vBNB, abi: vBnbAbi, functionName: "exchangeRateCurrent", account: AGENT_WALLET, blockNumber: block }),
+    ]);
+    const worth = Number(formatEther((vBnbBalance * rate.result) / 10n ** 18n));
+    earned = { supplied, worth, annualizedPct: bnbDays > 0 ? ((worth - supplied) / bnbDays) * 365 * 100 : 0, block };
+    console.log(
+      `  earned: supplied ${supplied} BNB, redeemable for ${worth.toFixed(6)} BNB now (+${(worth - supplied).toFixed(6)}), ${earned.annualizedPct.toFixed(1)}% annualized`,
+    );
+  }
+
   await prisma.evidenceSnapshot.create({
     data: {
       agentId: agent.id,
@@ -112,9 +152,8 @@ async function main() {
       successRate: snapshot.successRate,
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
-      // Real supply APY read live from Venus at decision time (see venus.ts
-      // getSupplyApyPct, annualized from an actually-measured block time).
-      netYieldPct: 42.24,
+      // Realized, annualized: see "earned" above.
+      netYieldPct: earned?.annualizedPct ?? null,
       worstDrawdownPct: null,
       capitalTested: 0.15,
       daysObserved: snapshot.daysObserved,
@@ -127,28 +166,27 @@ async function main() {
     `\nEvidence snapshot: confidence=${snapshot.confidenceScore} successRate=${(snapshot.successRate * 100).toFixed(0)}% actions=${snapshot.actionsExecuted}`,
   );
 
-  // Counterfactual: idle capital earns 0% by definition, a real, honest
-  // baseline that needs no invented comparison data (see CATEGORY_BASELINES.YIELD's
-  // own note on why the original "highest-TVL pool" baseline wasn't
-  // something this project could compute). Actual = the real supply APY
-  // read live from Venus at decision time (same 42.24% recorded on the
-  // EvidenceSnapshot above).
-  const supplyAction = await prisma.action.findFirst({
-    where: { agentId: agent.id, actionType: "supply_bnb" },
-  });
-  if (supplyAction) {
-    const existingCf = await prisma.counterfactual.findUnique({ where: { actionId: supplyAction.id } });
-    if (!existingCf) {
-      const cf = computeCounterfactual({
-        baselineScenario: CATEGORY_BASELINES.YIELD,
-        baselineOutcome: 0,
-        actualOutcome: 42.24,
-      });
-      await prisma.counterfactual.create({
-        data: { actionId: supplyAction.id, ...cf, unit: "% APY" },
-      });
-      console.log(`Counterfactual: "${cf.baselineScenario}" → value created +${cf.valueCreated.toFixed(2)}% APY`);
-    }
+  // Counterfactual: the same BNB left idle earns nothing, so the baseline
+  // is simply what was supplied. Replaced every sync, since the actual side
+  // keeps accruing.
+  const latestSupply = supplies.at(-1);
+  if (earned && latestSupply) {
+    const cf = computeCounterfactual({
+      baselineScenario: CATEGORY_BASELINES.YIELD,
+      baselineOutcome: earned.supplied,
+      actualOutcome: earned.worth,
+    });
+    await prisma.$transaction([
+      prisma.counterfactual.deleteMany({ where: { action: { agentId: agent.id } } }),
+      prisma.counterfactual.create({ data: { actionId: latestSupply.id, ...cf, unit: "BNB" } }),
+    ]);
+    console.log(`Counterfactual: "${cf.baselineScenario}", value created +${cf.valueCreated.toFixed(6)} BNB`);
+    await recordArenaRun(agent.id, Category.YIELD, {
+      baselineBnb: earned.supplied,
+      actualBnb: earned.worth,
+      block: earned.block,
+      baseline: CATEGORY_BASELINES.YIELD,
+    });
   }
 
   await prisma.$disconnect();

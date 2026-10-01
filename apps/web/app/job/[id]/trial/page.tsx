@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Address } from "viem";
 import { getAgentById } from "../../../lib/agents";
-import { formatBnb } from "../../../lib/catalog";
+import { formatBnb, formatSignedPct, RESULT_LABELS } from "../../../lib/catalog";
 import {
   runHealthFactorTrial,
   runYieldTrial,
@@ -141,9 +141,9 @@ export default async function TrialPage({
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-muted text-xs">Net yield to date</div>
+            <div className="text-muted text-xs">{RESULT_LABELS[agent.category] ?? "Result to date"}</div>
             <div className="mono-nums text-lg text-accent">
-              {agent.netYieldPct != null ? `+${agent.netYieldPct.toFixed(1)}%` : "n/a for this category"}
+              {agent.netYieldPct != null ? formatSignedPct(agent.netYieldPct) : "n/a for this category"}
             </div>
           </div>
           <div>

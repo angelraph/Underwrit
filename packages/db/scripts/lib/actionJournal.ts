@@ -63,6 +63,8 @@ const decodeAbi = parseAbi([
   "function increaseLiquidity((uint256 tokenId, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, uint256 deadline) params)",
   "function decreaseLiquidity((uint256 tokenId, uint128 liquidity, uint256 amount0Min, uint256 amount1Min, uint256 deadline) params)",
   "function repayBorrow(uint256 repayAmount)",
+  "function borrow(uint256 borrowAmount)",
+  "function enterMarkets(address[] vTokens)",
   "function mint()",
 ]);
 
@@ -157,6 +159,14 @@ export function labelTransaction(tx: Pick<Transaction, "to" | "input">, fallback
     return { type: "repay", params: { protocol: "venus", market: "vUSDT", amount: (decoded.args as readonly [bigint])[0].toString() } };
   }
 
+  if (same(tx.to, VENUS_TESTNET.vUSDT) && decoded.functionName === "borrow") {
+    return { type: "borrow", params: { protocol: "venus", market: "vUSDT", amount: (decoded.args as readonly [bigint])[0].toString() } };
+  }
+
+  if (same(tx.to, VENUS_TESTNET.comptroller) && decoded.functionName === "enterMarkets") {
+    return { type: "enable_collateral", params: { protocol: "venus", markets: (decoded.args as readonly [readonly string[]])[0] } };
+  }
+
   if (same(tx.to, VENUS_TESTNET.vBNB) && decoded.functionName === "mint") {
     return { type: "supply_bnb", params: { protocol: "venus", market: "vBNB" } };
   }
@@ -225,7 +235,7 @@ export async function reportCoverage(client: PublicClient, agentId: string, wall
   const missing = sent - recorded;
   console.log(
     missing > 0
-      ? `  coverage: wallet has sent ${sent} txs, ${recorded} recorded as actions (${missing} not itemised)`
+      ? `  coverage: wallet has sent ${sent} txs, ${recorded} recorded as actions (the other ${missing} are setup txs such as identity registration, or need a --full history scan)`
       : `  coverage: wallet has sent ${sent} txs, all ${recorded} recorded`,
   );
 }

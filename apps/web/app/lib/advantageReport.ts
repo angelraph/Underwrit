@@ -42,6 +42,11 @@ export interface AdvantageTask {
 const TASK_SPECS = [
   {
     erc8004AgentId: "1814",
+    // The approve + repay that make up this task (not the position setup before it).
+    taskTxHashes: [
+      "0x55ec8a77a786d9ada43b73fff851207d9f8f5f69ab181b9235c844c9a91e4245",
+      "0x7ccd9773af98867262b94ba5d16b0306d47d307d6bf2e7f259fd8795ef374ad3",
+    ],
     category: "HEALTH_FACTOR",
     title: "Catch and repay an at-risk Venus borrow position before liquidation",
     objective:
@@ -63,6 +68,7 @@ const TASK_SPECS = [
   },
   {
     erc8004AgentId: "1818",
+    taskTxHashes: ["0x51c0774de1bcf5dae1b2b844f70b55153632c0abbd8ac542230982a74a5fdd12"],
     category: "YIELD",
     title: "Route idle BNB to whichever Venus market actually pays the best real supply APY",
     objective:
@@ -82,6 +88,15 @@ const TASK_SPECS = [
   },
   {
     erc8004AgentId: "1819",
+    // The Aug 14 drift fix: remove, corrective swap, approvals, re-mint.
+    taskTxHashes: [
+      "0xe4d5065bb9f95986951b4b4b734163a371c8b99e8743f3a1ad75fdfc859dfee5",
+      "0x011654e75bfa00e313ae04614cc3f2801cae16f1de57712ee8ed6d44a1d30c76",
+      "0x029eeed44f175b7949dfa25fb5ce72f980b4dec367b092fb7bec531683926b3c",
+      "0x56016bb793aaf5fbecfb9ce76b44dffcfdbc96c5e718069c0633f421a6bdc338",
+      "0xcca04662093e7e57e3a74ef21efb47c687149ed94e120b33092a4924db9bd3ea",
+      "0x0c7657adb8870f68a40d20dedf552023a5306ae4be3f25243e768a23a7b0d9fc",
+    ],
     category: "REBALANCING",
     title: "Detect a concentrated LP position drifting out of range and rebalance it for real",
     objective:
@@ -109,7 +124,9 @@ export async function getAdvantageTasks(): Promise<AdvantageTask[]> {
   for (const spec of TASK_SPECS) {
     const agent = await prisma.agent.findUnique({
       where: { chainId_erc8004AgentId: { chainId: 97, erc8004AgentId: spec.erc8004AgentId } },
-      include: { actions: { orderBy: { timestamp: "asc" } } },
+      // Only this task's own txs: an agent's full history (the Rebalancer's
+      // includes an 11-day crash loop) would misstate what this task cost.
+      include: { actions: { where: { txHash: { in: [...spec.taskTxHashes] } }, orderBy: { timestamp: "asc" } } },
     });
     if (!agent || agent.actions.length === 0) continue;
 

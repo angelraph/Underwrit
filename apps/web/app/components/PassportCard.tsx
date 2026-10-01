@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatBnb, type AgentView } from "../lib/catalog";
+import { formatBnb, formatSignedPct, RESULT_LABELS, type AgentView } from "../lib/catalog";
 import { RiskBadge } from "./RiskBadge";
 
 /**
@@ -49,7 +49,7 @@ export function PassportCard({ agent, showHire = true }: { agent: AgentView; sho
           value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
         />
         {agent.netYieldPct != null && (
-          <Stat label="Net yield" value={`+${agent.netYieldPct.toFixed(1)}%`} />
+          <Stat label={RESULT_LABELS[agent.category] ?? "Result"} value={formatSignedPct(agent.netYieldPct)} />
         )}
         {agent.worstDrawdownPct != null && (
           <Stat label="Worst drawdown" value={`-${agent.worstDrawdownPct.toFixed(1)}%`} />

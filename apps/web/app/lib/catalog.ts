@@ -136,6 +136,29 @@ export function guessCategoryFromObjective(objective: string): Category | undefi
   return best;
 }
 
+/**
+ * What an agent's netYieldPct actually measures in each category, so the
+ * same field is never shown under a label that means something else.
+ * Health Factor has no such figure.
+ */
+export const RESULT_LABELS: Record<Category, string | null> = {
+  YIELD: "Earned, annualized",
+  GRID: "vs. just holding",
+  REBALANCING: "vs. unmanaged range",
+  HEALTH_FACTOR: null,
+};
+
+export function formatSignedPct(pct: number): string {
+  return `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+}
+
+/** Counterfactual amounts: BNB figures are small, so keep significant digits rather than two decimals. */
+export function formatOutcome(value: number, unit: string, signed = false): string {
+  const sign = signed && value >= 0 ? "+" : "";
+  const n = unit === "BNB" ? value.toLocaleString("en-US", { maximumSignificantDigits: 3 }) : value.toFixed(2);
+  return `${sign}${n} ${unit}`;
+}
+
 /** Capital tested and gas costs are recorded in (testnet) BNB, never USD. */
 export function formatBnb(amount: number): string {
   return `${amount.toLocaleString("en-US", { maximumSignificantDigits: 2 })} BNB`;

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@underwrit/db";
-import { CATEGORY_LABELS, formatBnb } from "../../lib/catalog";
+import { CATEGORY_LABELS, formatBnb, formatOutcome, formatSignedPct, RESULT_LABELS } from "../../lib/catalog";
 import { getAgentById } from "../../lib/agents";
 import { RiskBadge } from "../../components/RiskBadge";
 
@@ -72,7 +72,7 @@ export default async function AgentPassportPage({
             value={agent.avgReactionTimeSec > 0 ? `${agent.avgReactionTimeSec.toFixed(1)}s` : "not yet measured"}
           />
           {agent.netYieldPct != null && (
-            <Stat label="Net yield improvement" value={`+${agent.netYieldPct.toFixed(1)}%`} />
+            <Stat label={RESULT_LABELS[agent.category] ?? "Result"} value={formatSignedPct(agent.netYieldPct)} />
           )}
           {agent.worstDrawdownPct != null && (
             <Stat label="Worst drawdown" value={`-${agent.worstDrawdownPct.toFixed(1)}%`} />
@@ -87,26 +87,28 @@ export default async function AgentPassportPage({
         {counterfactual ? (
           <>
             <p className="mt-3 text-sm text-muted">
-              Most recent real action, compared against: &quot;
-              {counterfactual.baselineScenario}&quot;.
+              {agent.category !== "HEALTH_FACTOR"
+                ? "The agent's whole position, valued at today's price, compared against"
+                : "Most recent real action, compared against"}
+              : &quot;{counterfactual.baselineScenario}&quot;.
             </p>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
                 <div className="text-muted text-xs">Actual result</div>
                 <div className="mono-nums text-lg">
-                  {counterfactual.actualOutcome.toFixed(2)} {counterfactual.unit}
+                  {formatOutcome(counterfactual.actualOutcome, counterfactual.unit)}
                 </div>
               </div>
               <div>
                 <div className="text-muted text-xs">Baseline (no action)</div>
                 <div className="mono-nums text-lg">
-                  {counterfactual.baselineOutcome.toFixed(2)} {counterfactual.unit}
+                  {formatOutcome(counterfactual.baselineOutcome, counterfactual.unit)}
                 </div>
               </div>
               <div>
                 <div className="text-muted text-xs">Value created</div>
                 <div className="mono-nums text-lg text-accent">
-                  +{counterfactual.valueCreated.toFixed(2)} {counterfactual.unit}
+                  {formatOutcome(counterfactual.valueCreated, counterfactual.unit, true)}
                 </div>
               </div>
             </div>

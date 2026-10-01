@@ -20,9 +20,13 @@
 
 import { createPublicClient, formatEther, http } from "viem";
 import { bscTestnet } from "viem/chains";
+import { markAbandonedApprovals } from "./lib/abandonedApprovals";
 import { journalPathFor, reportCoverage, syncJournal } from "./lib/actionJournal";
+import { recordArenaRun } from "./lib/arena";
+import { readHoldings, startingBlock, valueInBnb } from "./lib/portfolio";
+import { archiveClient, syncWalletHistory } from "./lib/walletHistory";
 import { ActionResult, AgentSource, Category, Network, prisma, withDbRetry } from "@underwrit/db";
-import { computeEvidenceSnapshot } from "@underwrit/evidence-engine";
+import { CATEGORY_BASELINES, computeCounterfactual, computeEvidenceSnapshot } from "@underwrit/evidence-engine";
 
 const AGENT_WALLET = "0xE71bA547cA890B64A5207A0b50b66Dd3f5EE9e01";
 const OWNER_WALLET = "0x9Ffe8BF12437D30dC0BB321EE9Ad76b488F664FB"; // human owner (angelraphael.bnb), same as the other three
@@ -122,6 +126,8 @@ async function main() {
   }
 
   await syncJournal(client, agent.id, journalPathFor("gridtrading"));
+  await syncWalletHistory(agent.id, AGENT_WALLET, { full: process.argv.includes("--full"), renameTypes: { swap_wbnb_to_usdt: "sell_wbnb", swap_usdt_to_wbnb: "buy_wbnb" } });
+  await markAbandonedApprovals(agent.id);
   await reportCoverage(client, agent.id, AGENT_WALLET);
 
   const actions = await prisma.action.findMany({ where: { agentId: agent.id } });
@@ -136,6 +142,26 @@ async function main() {
     { network: "TESTNET" },
   );
 
+  // Grid vs. doing nothing: the wallet's real holdings the block before its
+  // first action, valued at today's pool price, against what it holds now
+  // (gas already paid out of it). Checked by hand on 2026-10-01 that every
+  // balance change since then is explained by the agent's own txs, so no
+  // outside top-up inflates the result.
+  const archive = archiveClient();
+  const startBlock = await startingBlock(archive, agent.id);
+  let vsHoldingPct: number | null = null;
+  let performance: { baseline: number; actual: number; block: bigint } | null = null;
+  if (startBlock != null) {
+    const block = await archive.getBlockNumber();
+    const [start, now] = await Promise.all([readHoldings(archive, AGENT_WALLET, startBlock), readHoldings(archive, AGENT_WALLET, block)]);
+    performance = { baseline: valueInBnb(start, now.usdtPerBnb), actual: valueInBnb(now, now.usdtPerBnb), block };
+    vsHoldingPct = ((performance.actual - performance.baseline) / performance.baseline) * 100;
+    console.log(
+      `  vs holding: started with ${valueInBnb(start, start.usdtPerBnb).toFixed(4)} BNB at block ${startBlock}, ` +
+        `worth ${performance.baseline.toFixed(4)} BNB today untouched, holds ${performance.actual.toFixed(4)} BNB now (${vsHoldingPct.toFixed(1)}%)`,
+    );
+  }
+
   await prisma.evidenceSnapshot.create({
     data: {
       agentId: agent.id,
@@ -143,7 +169,7 @@ async function main() {
       successRate: snapshot.successRate,
       avgCost: snapshot.avgCost,
       avgReactionTimeSec: snapshot.avgReactionTimeSec,
-      netYieldPct: null, // real fee/spread P&L needs an observation window this position hasn't had yet, so it's not invented
+      netYieldPct: vsHoldingPct, // result vs. holding the starting position, in BNB terms, see above
       worstDrawdownPct: null,
       // Real initial funding independently confirmed on-chain when the agent
       // first traded (see commit 22a7545: "0.05 tBNB, independently confirmed
@@ -163,12 +189,27 @@ async function main() {
     `\nEvidence snapshot: confidence=${snapshot.confidenceScore} successRate=${(snapshot.successRate * 100).toFixed(0)}% actions=${snapshot.actionsExecuted}`,
   );
 
-  // No Counterfactual row yet, deliberately. Same reasoning as the
-  // Rebalancer: CATEGORY_BASELINES.GRID ("held spot position, no grid
-  // orders") is real and well-defined, but a trustworthy dollar
-  // value-created figure needs an observed window comparing the grid's
-  // actual trading P&L against that unmanaged baseline, and this position
-  // hasn't run long enough to measure yet. Add it once it has.
+  // One live counterfactual for the whole position, kept on the latest
+  // action and replaced every sync, since the comparison moves with price.
+  const latest = await prisma.action.findFirst({ where: { agentId: agent.id }, orderBy: { timestamp: "desc" } });
+  if (performance && latest) {
+    const cf = computeCounterfactual({
+      baselineScenario: CATEGORY_BASELINES.GRID,
+      baselineOutcome: performance.baseline,
+      actualOutcome: performance.actual,
+    });
+    await prisma.$transaction([
+      prisma.counterfactual.deleteMany({ where: { action: { agentId: agent.id } } }),
+      prisma.counterfactual.create({ data: { actionId: latest.id, ...cf, unit: "BNB" } }),
+    ]);
+    console.log(`Counterfactual: "${cf.baselineScenario}", value created ${cf.valueCreated >= 0 ? "+" : ""}${cf.valueCreated.toFixed(4)} BNB`);
+    await recordArenaRun(agent.id, Category.GRID, {
+      baselineBnb: performance.baseline,
+      actualBnb: performance.actual,
+      block: performance.block,
+      baseline: CATEGORY_BASELINES.GRID,
+    });
+  }
 
   await prisma.$disconnect();
 }
